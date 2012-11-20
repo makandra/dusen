@@ -1,0 +1,8 @@
+doc
+pkg
+*.gem
+.idea
+app_root/log/*
+Gemfile.lock
+
+

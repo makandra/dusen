@@ -42,4 +42,12 @@ describe Dusen::ActiveRecord do
 
   end
 
+  describe '.search_syntax' do
+
+    it "should return the model's syntax definition when called without a block" do
+      User.search_syntax.should be_a(Dusen::Syntax)
+    end
+
+  end
+
 end

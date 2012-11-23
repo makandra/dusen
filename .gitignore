@@ -4,5 +4,6 @@ pkg
 .idea
 app_root/log/*
 Gemfile.lock
+spec/shared/app_root/db/*.db
 
 

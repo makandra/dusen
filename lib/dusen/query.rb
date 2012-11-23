@@ -4,11 +4,11 @@ module Dusen
     include Enumerable
 
     def initialize
-      @atoms = []
+      @tokens = []
     end
 
-    def <<(atom)
-      @atoms << atom
+    def <<(token)
+      @tokens << token
     end
 
     def to_s
@@ -16,7 +16,7 @@ module Dusen
     end
 
     def each(&block)
-      @atoms.each(&block)
+      @tokens.each(&block)
     end
 
   end

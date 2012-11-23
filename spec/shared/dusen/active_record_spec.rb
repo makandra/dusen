@@ -34,7 +34,7 @@ describe Dusen::ActiveRecord do
       User.search('city:"Foo Bar"').to_a.should == [match]
     end
 
-    it 'should allow to mix multiple types of atoms in a single query' do
+    it 'should allow to mix multiple types of tokens in a single query' do
       match = User.create!(:name => 'Foo', :city => 'Foohausen')
       no_match = User.create!(:name => 'Foo', :city => 'Barhausen')
       User.search('Foo city:Foohausen').to_a.should == [match]

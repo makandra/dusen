@@ -1,5 +1,5 @@
 module Dusen
-  class Atom
+  class Token
 
     attr_reader :field, :value
 

@@ -8,23 +8,23 @@ module Dusen
     def self.parse(query_string)
       query_string = query_string.dup # we are going to delete substrings in-place
       query = Query.new
-      extract_field_query_atoms(query_string, query)
-      extract_text_query_atoms(query_string, query)
+      extract_field_query_tokens(query_string, query)
+      extract_text_query_tokens(query_string, query)
       query
     end
 
-    def self.extract_text_query_atoms(query_string, query)
+    def self.extract_text_query_tokens(query_string, query)
       while query_string.sub!(TEXT_QUERY, '')
         value = "#{$1}#{$2}"
-        query << Atom.new(value)
+        query << Token.new(value)
       end
     end
 
-    def self.extract_field_query_atoms(query_string, query)
+    def self.extract_field_query_tokens(query_string, query)
       while query_string.sub!(FIELD_QUERY, '')
         field = $1
         value = "#{$2}#{$3}"
-        query << Atom.new(field, value)
+        query << Token.new(field, value)
       end
     end
 

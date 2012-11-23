@@ -1,5 +1,5 @@
 require 'dusen/util'
-require 'dusen/atom'
+require 'dusen/token'
 require 'dusen/description'
 require 'dusen/parser'
 require 'dusen/query'

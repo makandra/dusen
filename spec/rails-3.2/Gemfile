@@ -5,7 +5,7 @@ gem 'rspec'
 gem 'rspec-rails'
 gem 'sqlite3'
 gem 'rspec_candy'
-gem 'ruby-debug'
+gem 'ruby-debug', :platforms => :ruby_18
 gem 'database_cleaner'
 
 gem 'dusen', :path => '../..'

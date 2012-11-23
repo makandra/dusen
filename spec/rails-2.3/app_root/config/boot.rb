@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # Allow customization of the rails framework path
 RAILS_FRAMEWORK_ROOT = (ENV['RAILS_FRAMEWORK_ROOT'] || "#{File.dirname(__FILE__)}/../../../../../../vendor/rails") unless defined?(RAILS_FRAMEWORK_ROOT) 
 

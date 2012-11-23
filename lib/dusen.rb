@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'dusen/util'
 require 'dusen/token'
 require 'dusen/description'

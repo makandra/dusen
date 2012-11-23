@@ -4,6 +4,6 @@ gem 'rails', '~>3.0.17'
 gem 'rspec'
 gem 'rspec-rails'
 gem 'sqlite3'
-gem 'ruby-debug'
+gem 'ruby-debug', :platforms => :ruby_18
 
 gem 'dusen', :path => '../..'

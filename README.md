@@ -1,6 +1,7 @@
 Dusen - Maps Google-like queries to ActiveRecord scopes
 =======================================================
 
+[![Build Status](https://secure.travis-ci.org/makandra/dusen.png?branch=master)](https://travis-ci.org/makandra/dusen)
 
 Dusen gives your ActiveRecord models a DSL to process Google-like queries like:
 

@@ -16,6 +16,19 @@ module Dusen
           end
         end
 
+        def search_text(&text)
+
+          after_save :index_search_text
+
+          define_method :index_search_text do
+            new_text = instance_eval(&text)
+            new_text = Array.wrap(new_text).collect(&:to_s).join(' ').gsub(/\s+/, ' ').strip
+            Dusen::ActiveRecord::SearchText.rewrite(self, new_text)
+            true
+          end
+
+        end
+
         def where_like(conditions)
           scope = self
           conditions.each do |field_or_fields, query|

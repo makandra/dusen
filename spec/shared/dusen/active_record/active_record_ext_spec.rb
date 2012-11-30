@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe Dusen::ActiveRecord do
+describe ActiveRecord::Base do
 
   describe '.search' do
 

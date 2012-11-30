@@ -18,5 +18,9 @@ class User < ActiveRecord::Base
 
   end
 
+  search_text do
+    [name, email, city]
+  end
+
 end
 

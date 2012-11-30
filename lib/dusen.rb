@@ -9,13 +9,10 @@ require 'dusen/query'
 require 'dusen/syntax'
 
 if defined?(ActiveRecord)
-  require 'dusen/active_record_ext'
-  require 'dusen/search_text'
+  require 'dusen/active_record/base_ext'
+  require 'dusen/active_record/search_text'
 end
 
-raise "die"
-
-if defined?(Rails)
-  puts "defined!!!"
-  require 'dusen/railtie'
-end
+#if defined?(Rails::Railstie)
+#  require 'dusen/railtie'
+#end

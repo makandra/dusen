@@ -1,4 +1,1 @@
-test:
-  adapter: sqlite3
-  database: db/gem_test.db
-  verbosity: quiet
+../../../shared/app_root/config/database.yml

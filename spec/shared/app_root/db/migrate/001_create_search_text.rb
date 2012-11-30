@@ -1,6 +1,6 @@
 class CreateSearchText < ActiveRecord::Migration
 
-  def up
+  def self.up
     create_table :search_texts, :options => 'ENGINE=MyISAM' do |t|
       t.integer :model_id
       t.string  :model_type
@@ -10,7 +10,7 @@ class CreateSearchText < ActiveRecord::Migration
     execute 'CREATE FULLTEXT INDEX fulltext_index_body ON search_texts (words)'
   end
 
-  def down
+  def self.down
     drop_table :search_texts
   end
 

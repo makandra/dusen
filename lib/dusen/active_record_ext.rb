@@ -20,11 +20,13 @@ module Dusen
         fields = Array(field_or_fields).collect do |field|
           Util.qualify_column_name(scope, field)
         end
-        query_with_placeholders = fields.collect { |field| "#{field} LIKE ?" }.join(' OR ')
-        like_expression = Dusen::Util.like_expression(query)
-        bindings = [like_expression] * fields.size
-        conditions = [ query_with_placeholders, *bindings ]
-        scope = Util.append_scope_conditions(scope, conditions)
+        Array.wrap(query).each do |phrase|
+          phrase_with_placeholders = fields.collect { |field| "#{field} LIKE ?" }.join(' OR ')
+          like_expression = Dusen::Util.like_expression(phrase)
+          bindings = [like_expression] * fields.size
+          conditions = [ phrase_with_placeholders, *bindings ]
+          scope = Util.append_scope_conditions(scope, conditions)
+        end
       end
       scope
     end

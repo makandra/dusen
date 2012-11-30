@@ -19,5 +19,9 @@ module Dusen
       value
     end
 
+    def text?
+      field == 'text'
+    end
+
   end
 end

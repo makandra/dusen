@@ -19,6 +19,7 @@ module Dusen
     def search(root_scope, query)
       scope = root_scope
       query = parse(query) if query.is_a?(String)
+      query = query.condensed
       query.each do |token|
         scoper = @scopers[token.field] || unknown_scoper
         scope = scoper.call(scope, token.value)

@@ -18,6 +18,8 @@ module Dusen
 
         def search_text(&text)
 
+          has_one :search_text, :as => :source, :dependent => :destroy, :class_name => '::Dusen::ActiveRecord::SearchText'
+
           after_save :index_search_text
 
           define_method :index_search_text do

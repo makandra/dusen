@@ -7,21 +7,21 @@ describe ActiveRecord::Base do
   describe '.search' do
 
     it 'should find records by given words' do
-      match = User.create!(:name => 'foo')
-      no_match = User.create!(:name => 'bar')
-      User.search('foo').to_a.should == [match]
+      match = User.create!(:name => 'Abraham')
+      no_match = User.create!(:name => 'Elizabath')
+      User.search('Abraham').to_a.should == [match]
     end
 
     it 'should AND multiple words' do
-      match = User.create!(:name => 'foo bar')
-      no_match = User.create!(:name => 'foo')
-      User.search('foo bar').to_a.should == [match]
+      match = User.create!(:name => 'Abraham Lincoln')
+      no_match = User.create!(:name => 'Abraham')
+      User.search('Abraham Lincoln').to_a.should == [match]
     end
 
     it 'should find records by phrases' do
-      match = User.create!(:name => 'foo bar baz')
-      no_match = User.create!(:name => 'foo baz bar')
-      User.search('"foo bar"').to_a.should == [match]
+      match = User.create!(:name => 'Abraham Lincoln')
+      no_match = User.create!(:name => 'Abraham John Lincoln')
+      User.search('"Abraham Lincoln"').to_a.should == [match]
     end
 
     it 'should find records by qualified fields' do

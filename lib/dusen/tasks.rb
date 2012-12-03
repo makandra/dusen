@@ -16,8 +16,8 @@
 #      t.string  :model_type
 #      t.text    :words
 #    end
-#    add_index :search_texts, [:model_type, :model_id]
-#    execute 'CREATE FULLTEXT INDEX fulltext_index_body ON search_texts (words)'
+#    add_index :search_texts, [:model_type, :model_id] # for deletion
+#    execute 'CREATE FULLTEXT INDEX fulltext_index_body ON search_texts (words)' # for search
 #  end
 #  def down
 #    drop_table :search_texts

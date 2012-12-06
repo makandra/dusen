@@ -89,6 +89,14 @@ module Dusen
     #  end
     #end
 
+    def scope_to_sql(options = {})
+      if Rails.version < '3'
+        scope.construct_finder_sql(options)
+      else
+        scope.scoped(options).to_sql
+      end
+    end
+
     def collect_column(scope, column_name, find_options = {})
       distinct = find_options.delete(:distinct)
       qualified_column_name = "`#{scope.table_name}`.`#{column_name}`"

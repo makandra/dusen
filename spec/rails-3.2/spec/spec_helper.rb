@@ -8,8 +8,9 @@ ENV['RAILS_ROOT'] = 'app_root'
 # Load the Rails environment and testing framework
 require "#{File.dirname(__FILE__)}/../app_root/config/environment"
 require 'rspec/rails'
-require 'database_cleaner'
 DatabaseCleaner.strategy = :truncation
+
+# Dir["#{File.dirname(__FILE__)}/../../shared/spec/shared_examples"].each {|f| require f}
 
 # Run the migrations
 Dusen::Util.migrate_test_database

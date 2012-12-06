@@ -5,5 +5,6 @@ gem 'rspec'
 gem 'rspec-rails'
 gem 'mysql2', '~>0.2.0'
 gem 'ruby-debug', :platforms => :ruby_18
+gem 'database_cleaner'
 
 gem 'dusen', :path => '../..'

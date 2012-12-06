@@ -6,14 +6,14 @@ module Dusen
       module ClassMethods
 
         def search_syntax(&dsl)
-          if dsl
+          if @search_syntax.nil?
+            dsl ||= lambda {}
             @search_syntax = Dusen::Description.read_syntax(&dsl)
             singleton_class.send(:define_method, :search) do |query_string|
               @search_syntax.search(self, query_string)
             end
-          else
-            @search_syntax
           end
+          @search_syntax
         end
 
         def search_text(&text)

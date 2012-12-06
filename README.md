@@ -1,20 +1,15 @@
-Dusen - Maps Google-like queries to ActiveRecord scopes
-=======================================================
+Dusen [![Build Status](https://secure.travis-ci.org/makandra/dusen.png?branch=master)](https://travis-ci.org/makandra/dusen)
+======
 
-[![Build Status](https://secure.travis-ci.org/makandra/dusen.png?branch=master)](https://travis-ci.org/makandra/dusen)
+Comprehensive search solution for ActiveRecord and MySQL
+--------------------------------------------------------
 
-Dusen gives your ActiveRecord models a DSL to process Google-like queries like:
+Dusen lets you search ActiveRecord model when all you have is MySQL (no Solr, Sphinx, etc.). Here's what Dusen does for you:
 
-    some words
-    "a phrase of words"
-    filetype:pdf
-    a mix of words "and phrases" and qualified:fields
-
-Dusen tokenizes these queries for you and feeds them through simple mappers that
-convert a token to an ActiveRecord scope chain.
-This process is packaged in a class method `.search`:
-
-    Contact.search('makandra software "Ruby on Rails" city:augsburg')
+1. It takes a text query in Google-like syntax (e.g. `some words "a phrase" filetype:pdf`)
+2. It parses the query into individual tokens.
+3. It lets you define simple mappers that convert a token to an ActiveRecord scope chain. Mappers can match tokens using ActiveRecord's `where` or perform full text searches with either [LIKE queries](#processing-full-text-search-queries-with-like-queries) or [FULLTEXT indexes](#processing-full-text-queries-with-fulltext-indexes) (see [performance analysis](https://makandracards.com/makandra/12813-performance-analysis-of-mysql-s-fulltext-indexes-and-like-queries-for-full-text-search)).
+4. It gives your model a method `Model.search('some query')` that performs all of the above and returns an ActiveRecord scope chain.
 
 
 Installation
@@ -28,25 +23,23 @@ Now run `bundle install` and restart your server.
 
 
 
-Processing text queries
------------------------
+Processing full text search queries with LIKE queries
+-----------------------------------------------------
 
 This describes how to define a search syntax that processes queries
-of words and phrases:
+of words and phrases, e.g. `coworking fooville "market ave"`.
 
-    coworking fooville "market ave"
 
+Under the hood the search will be performed using [LIKE queries](http://dev.mysql.com/doc/refman/5.0/en/string-comparison-functions.html#operator_like), which are [fast enough](https://makandracards.com/makandra/12813-performance-analysis-of-mysql-s-fulltext-indexes-and-like-queries-for-full-text-search) for medium sized data sets. Once your data outgrows LIKE queries, Dusen lets you [migrate to FULLTEXT indexes](#processing-full-text-queries-with-fulltext-indexes), which perform better but come at some added complexity.
 
 Our example will be a simple address book:
 
     class Contact < ActiveRecord::Base
-
       validates_presence_of :name, :street, :city, :name
-
     end
 
 
-We will now teach `Contact` to process a text query like this:
+In order to teach `Contact` how to process a text query, use the `search_syntax` and `search_by :text` macros:
 
     class Contact < ActiveRecord::Base
 
@@ -54,9 +47,9 @@ We will now teach `Contact` to process a text query like this:
 
       search_syntax do
 
-        search_by :text do |scope, phrase|
+        search_by :text do |scope, phrases|
           columns = [:name, :street, :city, :email]
-          scope.where_like(columns => phrase)
+          scope.where_like(columns => phrases)
         end
 
       end
@@ -64,36 +57,47 @@ We will now teach `Contact` to process a text query like this:
     end
 
 
-Note how you will only ever need to deal with a single token (word or phrase) and return a scope that matches the token.
-Dusen will take care how these scopes will be chained together.
+Dusen will tokenize the query into individual phrases and call the `search_by :text` block with it. The block is expected to return a scope that filters by the given phrases.
 
-If we now call `Contact.search('coworking fooville "market ave"')`
-the block supplied to `search_by` is called once per token:
+If, for example, we call `Contact.search('coworking fooville "market ave"')`
+the block supplied to `search_by :text` is called with the following arguments:
 
-1. `|Contact, 'coworking'|`
-2. `|Contact.where_like(columns => 'coworking'), 'fooville'|`
-3. `|Contact.where_like(columns => 'coworking').where_like(columns => 'fooville'), 'market ave'|`
+    |Contact, ['coworking', 'fooville', 'market ave']|
 
 
 The resulting scope chain is your `Contact` model filtered by
 the given query:
 
      > Contact.search('coworking fooville "market ave"')
-    => Contact.where_like(columns => 'coworking').where_like(columns => 'fooville').where_like(columns => 'market ave')
+    => Contact.where_like([:name, :street, :city, :email] => ['coworking', 'fooville', 'market ave'])
 
 
 Note that `where_like` is an utility method that comes with the Dusen gem.
-It takes one or more column names and a phrase and generates an SQL fragment
-like this:
+It takes one or more column names and one or more phrases and generates an SQL fragment
+that looks roughly like the following:
 
-    contacts.name LIKE "%coworking%" OR contacts.street LIKE "%coworking%" OR contacts.email LIKE "%coworking%" OR contacts.email LIKE "%coworking%"
+    ( contacts.name LIKE "%coworking%"    OR 
+      contacts.street LIKE "%coworking%"  OR 
+      contacts.email LIKE "%coworking%"   OR 
+      contacts.email LIKE "%coworking%" ) AND
+    ( contacts.name LIKE "%fooville%"     OR 
+      contacts.street LIKE "%fooville%"   OR 
+      contacts.email LIKE "%fooville%"    OR 
+      contacts.email LIKE "%fooville%" )  AND
+    ( contacts.name LIKE "%market ave%"   OR 
+      contacts.street LIKE "%market ave%" OR 
+      contacts.email LIKE "%market ave%"  OR 
+      contacts.email LIKE "%market ave%" )
 
 
 Processing queries for qualified fields
 ---------------------------------------
 
-Let's give `Contact` a way to explictely search for a contact's email address, without
-going through a full text search. We do this by adding additional `search_by` instructions
+We now want to process a qualified query like `email:foo@bar.com` to
+explictily search for a contact's email address, without going through
+a full text search.
+
+We can learn this syntax by adding a `search_by :email` instruction
 to our model:
 
     search_syntax do
@@ -102,11 +106,11 @@ to our model:
         ...
       end
 
-     search_by :email do |scope, email|
-       scope.where(:email => email)
-     end
+      search_by :email do |scope, email|
+        scope.where(:email => email)
+      end
 
-   end
+    end
 
 
 The result is this:
@@ -121,11 +125,19 @@ Feel free to combine text tokens and field tokens:
     => Contact.where_like(columns => 'fooville').where(:email => 'foo@bar.com')
 
 
+Processing full text queries with FULLTEXT indexes
+---------------------------------------------------
+
+TODO
+
 
 Programmatic access without DSL
 -------------------------------
 
-You can use Dusen's functionality without using the ActiveRecord DSL or the search scope. Here are some method calls to get you started:
+You can use Dusen's functionality without using the ActiveRecord DSL or the `search` method.
+**Please note that at this time we cannot yet commit to the API of these internal methods**. So don't get mad when stuff breaks after you update the gem.
+
+Here are some method calls to get you started:
 
     Contact.search_syntax # => #<Dusen::Syntax>
 
@@ -146,12 +158,12 @@ Development
 
 Test applications for various Rails versions lives in `spec`. You can run specs from the project root by saying:
 
-  bundle exec rake all:spec
+    bundle exec rake all:spec
 
 If you would like to contribute:
 
 - Fork the repository.
-- Push your changes **with specs**.
+- Push your changes **with passing specs**.
 - Send me a pull request.
 
 I'm very eager to keep this gem leightweight and on topic. If you're unsure whether a change would make it into the gem, [talk to me beforehand](mailto:henning.koch@makandra.de).

@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.authors = ["Henning Koch"]
   s.email = 'henning.koch@makandra.de'
   s.homepage = 'https://github.com/makandra/dusen'
-  s.summary = 'Maps Google-like queries (words, "phrases", qualified:fields) to ActiveRecord scope chains'
+  s.summary = 'Comprehensive full text search for ActiveRecord and MySQL'
   s.description = s.summary
 
   s.files         = `git ls-files`.split("\n")

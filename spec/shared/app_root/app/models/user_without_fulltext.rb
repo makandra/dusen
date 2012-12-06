@@ -1,12 +1,14 @@
 # encoding: utf-8
 
-class User < ActiveRecord::Base
+class UserWithoutFulltext < ActiveRecord::Base
+
+  self.table_name = 'users_without_fulltext'
 
   search_syntax do
 
-    #search_by :text do |scope, text|
-    #  scope.where_like([:name, :email, :city] => text)
-    #end
+    search_by :text do |scope, text|
+      scope.where_like([:name, :email, :city] => text)
+    end
 
     search_by :city do |scope, city|
       scope.scoped(:conditions => { :city => city })
@@ -16,10 +18,6 @@ class User < ActiveRecord::Base
       scope.scoped(:conditions => { :email => email })
     end
 
-  end
-
-  search_text do
-    [name, email, city]
   end
 
 end

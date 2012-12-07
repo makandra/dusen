@@ -6,9 +6,9 @@ module Dusen
       module ClassMethods
 
         def search_syntax(&dsl)
-          if @search_syntax.nil?
-            dsl ||= lambda {}
-            @search_syntax = Dusen::Description.read_syntax(&dsl)
+          @search_syntax ||= Dusen::Syntax.new
+          Dusen::Description.parse_syntax(@search_syntax, &dsl) if dsl
+          unless singleton_class.method_defined?(:search)
             singleton_class.send(:define_method, :search) do |query_string|
               @search_syntax.search(self, query_string)
             end
@@ -27,6 +27,12 @@ module Dusen
             new_text = Array.wrap(new_text).collect(&:to_s).join(' ').gsub(/\s+/, ' ').strip
             Dusen::ActiveRecord::SearchText.rewrite(self, new_text)
             true
+          end
+
+          search_syntax do
+            search_by :text do |scope, phrases|
+              Dusen::ActiveRecord::SearchText.match(scope, phrases)
+            end
           end
 
         end

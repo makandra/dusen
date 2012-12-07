@@ -5,7 +5,6 @@ module Dusen
 
     def initialize
       @scopers = {}
-      learn_field(:text, &SEARCH_TEXT_SCOPER)
     end
 
     def learn_field(field, &scoper)
@@ -28,6 +27,10 @@ module Dusen
       scope
     end
 
+    def fields
+      @scopers
+    end
+
     def parse(query)
       Parser.parse(query)
     end
@@ -36,10 +39,6 @@ module Dusen
 
     DEFAULT_UNKNOWN_SCOPER = lambda do |scope, *args|
       scope.where('1=2')
-    end
-
-    SEARCH_TEXT_SCOPER = lambda do |scope, phrases|
-      Dusen::ActiveRecord::SearchText.match(scope, phrases)
     end
 
     def unknown_scoper

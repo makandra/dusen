@@ -29,8 +29,10 @@ Processing full text search queries with LIKE queries
 This describes how to define a search syntax that processes queries
 of words and phrases, e.g. `coworking fooville "market ave"`.
 
-
 Under the hood the search will be performed using [LIKE queries](http://dev.mysql.com/doc/refman/5.0/en/string-comparison-functions.html#operator_like), which are [fast enough](https://makandracards.com/makandra/12813-performance-analysis-of-mysql-s-fulltext-indexes-and-like-queries-for-full-text-search) for medium sized data sets. Once your data outgrows LIKE queries, Dusen lets you [migrate to FULLTEXT indexes](#processing-full-text-queries-with-fulltext-indexes), which perform better but come at some added complexity.
+
+
+### Setup and usage
 
 Our example will be a simple address book:
 
@@ -71,6 +73,7 @@ the given query:
      > Contact.search('coworking fooville "market ave"')
     => Contact.where_like([:name, :street, :city, :email] => ['coworking', 'fooville', 'market ave'])
 
+### What where_like does under the hood
 
 Note that `where_like` is an utility method that comes with the Dusen gem.
 It takes one or more column names and one or more phrases and generates an SQL fragment
@@ -92,6 +95,10 @@ that looks roughly like the following:
 
 Processing queries for qualified fields
 ---------------------------------------
+
+Google supports queries like `filetype:pdf` that filters records by some criteria without performing a full text search. Dusen gives you a simple way to support such search syntax.
+
+### Setup and usage
 
 We now want to process a qualified query like `email:foo@bar.com` to
 explictily search for a contact's email address, without going through
@@ -119,7 +126,7 @@ The result is this:
     => Contact.where(:email => 'foo@bar.com')
 
 
-Feel free to combine text tokens and field tokens:
+Note that you can combine text tokens and field tokens:
 
      > Contact.search('fooville email:foo@bar.com')
     => Contact.where_like(columns => 'fooville').where(:email => 'foo@bar.com')
@@ -128,7 +135,87 @@ Feel free to combine text tokens and field tokens:
 Processing full text queries with FULLTEXT indexes
 ---------------------------------------------------
 
-TODO
+### When do I need this?
+
+As your number of records grows larger, you might outgrow a full text implementation that uses LIKE (see [performance analysis](https://makandracards.com/makandra/12813-performance-analysis-of-mysql-s-fulltext-indexes-and-like-queries-for-full-text-search)). For this case Dusen ships with an alternative full text search solution using MySQL FULLTEXT indexes that scale much better.
+
+### Understanding the MyISAM limitation
+
+Using this feature comes at some added complexity so you should first check if search performance is actually a problem for you. If all you have is a few thousand records with a few dozen words each, changes are your views render many times longer than a LIKE query takes to finish. Always measure before optimizing.
+
+Currently stable MySQL versions only allow FULLTEXT indexes on MyISAM tables (this will change in MySQL 5.6). You don't however want to migrate your models to MyISAM tables because of their many limitations (poor crash recovery, no transactions, etc.).
+
+To work around this, Dusen uses a separate MyISAM table `search_texts` to index your searchable text. Each row in your model's table will be shadowed by a corresponding row in `search_texts`. Dusen will automatically create, update and destroy these shadow rows as your model records change.
+
+
+### Setup and usage
+
+First we need to create the `search_texts` table. Since we're on Rails, we will do this using a migration. So enter `rails generate migration CreateSearchText` and use the following code as the migration's content:
+
+    class CreateSearchText < ActiveRecord::Migration
+    
+      def self.up
+        create_table :search_texts, :options => 'ENGINE=MyISAM' do |t|
+          t.integer :source_id
+          t.string  :source_type
+          t.text    :words
+        end
+        add_index :search_texts, [:source_type, :source_id]
+        execute 'CREATE FULLTEXT INDEX fulltext_index_words ON search_texts (words)'
+      end
+    
+      def self.down
+        drop_table :search_texts
+      end
+    
+    end
+
+Since we're using some MySQL-specific options we also need to change the format of your `db/schema.rb` from Ruby to SQL (you will get a `db/schema.sql` instead). You can configure this in your `application.rb` (`environment.rb` in Rails 2):
+
+    config.active_record.schema_format = :sql
+
+
+We now need to your model which text to index. We do this using the `search_text` macro and returning the searchable text:
+
+    class Contact < ActiveRecord::Base
+
+      search_syntax
+
+      search_text do
+        [name, street, city, email]
+      end
+
+      end
+
+    end
+
+You can return any object or array of objects. Dusen will stringify the return value and index those words. Note that indexed words do not need to be fields of your model:
+
+    search_text do
+      [email, city, author.screen_name, ('client' if client?)
+    end
+
+You're done! You can now search `Contact` using the same API you used with [LIKE queries](#processing-full-text-search-queries-with-like-queries):
+
+    Contact.search('coworking fooville "market ave"')
+
+Note that you didn't need to teach your model how to process text queries by defining a mapper with `search_by :text { ... }`. The `search_text` macro defines this mapper for you.
+
+Also note that if you migrated an existing table to FULLTEXT search, you need to build the index the first time. See below.
+
+
+### Keeping the index in sync
+    
+Dusen will automatically update the index whenever your model's records are created, updated or destroyed. If you migrated an existing table to FULLTEXT search, you need to 
+
+
+Call when something associated changes
+
+    record.index_search_text
+
+    Model.all.each(&index_search_text)
+
+
 
 
 Programmatic access without DSL

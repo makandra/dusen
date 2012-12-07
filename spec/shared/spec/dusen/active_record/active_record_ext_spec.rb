@@ -50,6 +50,10 @@ shared_examples_for 'model with search syntax' do
       subject.search_syntax.should be_a(Dusen::Syntax)
     end
 
+    it 'should be callable multiple times, appending additional syntax' do
+      subject.search_syntax.fields.keys.should =~ ['text', 'email', 'city', 'role']
+    end
+
   end
 
 end
@@ -71,7 +75,7 @@ describe ActiveRecord::Base do
 
     it_should_behave_like 'model with search syntax'
 
-    it 'should be shadowed by a Dusen::ActiveRecord::SearchText, which is created, changed and dies with the record' do
+    it 'should be shadowed by a Dusen::ActiveRecord::SearchText, which is created, updated and destroyed with the record' do
       user = UserWithFulltext.create!(:name => 'name', :email => 'email', :city => 'city')
       Dusen::ActiveRecord::SearchText.all.collect(&:words).should == ['name email city']
       user.update_attributes!(:email => 'changed_email')

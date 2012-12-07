@@ -16,6 +16,14 @@ class UserWithFulltext < ActiveRecord::Base
 
   end
 
+  search_syntax do # multiple search_syntax directives are allowed
+
+    search_by :role do |scope, role|
+      scope.scoped(:conditions => { :role => role })
+    end
+
+  end
+
   search_text do
     [name, email, city]
   end

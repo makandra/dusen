@@ -3,11 +3,13 @@ class CreateRecipeModels < ActiveRecord::Migration
   def self.up
     create_table :recipes do |t|
       t.string :name
+      t.integer :category_id
     end
     create_table :recipe_ingredients do |t|
       t.string :name
+      t.integer :recipe_id
     end
-    create_table :recipe_category do |t|
+    create_table :recipe_categories do |t|
       t.string :name
     end
   end

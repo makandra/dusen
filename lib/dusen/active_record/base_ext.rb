@@ -24,8 +24,11 @@ module Dusen
 
           define_method :index_search_text do
             new_text = instance_eval(&text)
-            new_text = Array.wrap(new_text).collect(&:to_s).join(' ').gsub(/\s+/, ' ').strip
-            Dusen::ActiveRecord::SearchText.rewrite(self, new_text)
+            new_text = Array.wrap(new_text).flatten.collect(&:to_s).join(' ').gsub(/\s+/, ' ').strip
+            if @last_indexed_search_text != new_text # don't rewrite the index too often in a nested form scenario
+              Dusen::ActiveRecord::SearchText.rewrite(self, new_text)
+            end
+            @last_indexed_search_text = new_text
             true
           end
 
@@ -33,6 +36,38 @@ module Dusen
             search_by :text do |scope, phrases|
               Dusen::ActiveRecord::SearchText.match(scope, phrases)
             end
+          end
+
+        end
+
+        def part_of_search_text_for(&associations)
+          index_associations_method = "index_search_text_for_associations"
+          remember_associations_method = "remember_associations_with_search_text"
+          associations_method = "associations_with_search_text"
+
+          before_validation remember_associations_method
+          before_destroy remember_associations_method
+
+          after_save index_associations_method
+          after_destroy index_associations_method
+
+          private
+
+          define_method index_associations_method do
+            records = @associations_with_search_text | send(associations_method)
+            # p [records, records.collect(&:category)]
+            records.collect(&:reload).each(&:index_search_text)
+            true
+          end
+
+          define_method remember_associations_method do
+            @associations_with_search_text = send(associations_method)
+            # p @associations_with_search_text
+            true
+          end
+
+          define_method associations_method do
+            Array.wrap(instance_eval(&associations)).flatten
           end
 
         end

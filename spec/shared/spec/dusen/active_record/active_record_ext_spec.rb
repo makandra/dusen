@@ -37,9 +37,15 @@ shared_examples_for 'model with search syntax' do
     end
 
     it 'should allow to mix multiple types of tokens in a single query' do
-      match = subject.create!(:name => 'Foo', :city => 'Foohausen')
-      no_match = subject.create!(:name => 'Foo', :city => 'Barhausen')
+      match = subject.create!(:name => 'Abraham', :city => 'Foohausen')
+      no_match = subject.create!(:name => 'Abraham', :city => 'Barhausen')
       subject.search('Foo city:Foohausen').to_a.should == [match]
+    end
+
+    it 'should not find records from another model' do
+      match = subject.create!(:name => 'Abraham')
+      Recipe.create!(:name => 'Abraham')
+      subject.search('Abraham').to_a.should == [match]
     end
 
   end
@@ -82,6 +88,31 @@ describe ActiveRecord::Base do
       Dusen::ActiveRecord::SearchText.all.collect(&:words).should == ['name changed_email city']
       user.destroy
       Dusen::ActiveRecord::SearchText.count.should be_zero
+    end
+
+    it 'should allow to index fields from an associated model' do
+      category = Recipe::Category.create!(:name => 'Rice')
+      recipe = Recipe.create!(:name => 'Martini Chicken', :category => category)
+      recipe.ingredients.create!(:name => 'Paprica')
+      recipe.ingredients.create!(:name => 'Tomatoes')
+      recipe.index_search_text
+      Recipe.search('Rice').to_a.should == [recipe]
+      Recipe.search('Martini').to_a.should == [recipe]
+      Recipe.search('Paprica').to_a.should == [recipe]
+      Recipe.search('Tomatoes').to_a.should == [recipe]
+    end
+
+    it 'should automatically reindex itself when an associated record changes if that associated model has a .part_of_search_text_for directive' do
+      category = Recipe::Category.create!(:name => 'Rice')
+      recipe = Recipe.create!(:name => 'Martini Chicken', :category => category)
+      ingredient = recipe.ingredients.create!(:name => 'Paprica')
+      category.update_attributes!(:name => 'Noodles')
+      ingredient.update_attributes!(:name => 'Onions')
+      Recipe.search('Noodles').to_a.should == [recipe]
+      Recipe.search('Onion').to_a.should == [recipe]
+      category.reload
+      category.destroy
+      Recipe.search('Noodles').to_a.should be_empty
     end
 
   end

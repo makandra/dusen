@@ -7,5 +7,6 @@ gem 'mysql2'
 gem 'rspec_candy'
 gem 'ruby-debug', :platforms => :ruby_18
 gem 'database_cleaner'
+gem 'andand'
 
 gem 'dusen', :path => '../..'

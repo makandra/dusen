@@ -2,22 +2,21 @@
 
 $: << File.join(File.dirname(__FILE__), "/../../lib" )
 
-# Set the default environment to sqlite3's in_memory database
 ENV['RAILS_ENV'] = 'test'
 ENV['RAILS_ROOT'] = 'app_root'
 
 # Load the Rails environment and testing framework
 require "#{File.dirname(__FILE__)}/../app_root/config/environment"
 require 'rspec/rails'
-
-FileUtils.rm(Dir.glob("#{Rails.root}/db/*.db"), :force => true)
+DatabaseCleaner.strategy = :truncation
 
 # Run the migrations
-print "\033[30m" # dark gray text
-ActiveRecord::Migrator.migrate("#{Rails.root}/db/migrate")
-print "\033[0m"
+Dusen::Util.migrate_test_database
 
 RSpec.configure do |config|
-  config.use_transactional_fixtures = true
+  config.use_transactional_fixtures = false
   config.use_instantiated_fixtures  = false
+  config.before(:each) do
+    DatabaseCleaner.clean
+  end
 end

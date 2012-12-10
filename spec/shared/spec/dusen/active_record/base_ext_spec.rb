@@ -83,40 +83,55 @@ describe ActiveRecord::Base do
 
     it 'should be shadowed by a Dusen::ActiveRecord::SearchText, which is created, updated and destroyed with the record' do
       user = User::WithFulltext.create!(:name => 'name', :email => 'email', :city => 'city')
+      User::WithFulltext.index_search_texts
       Dusen::ActiveRecord::SearchText.all.collect(&:words).should == ['name email city']
+      user.reload
       user.update_attributes!(:email => 'changed_email')
+      User::WithFulltext.index_search_texts
       Dusen::ActiveRecord::SearchText.all.collect(&:words).should == ['name changed_email city']
       user.destroy
+      User::WithFulltext.index_search_texts
       Dusen::ActiveRecord::SearchText.count.should be_zero
     end
 
-    it 'should allow to index fields from an associated model' do
-      category = Recipe::Category.create!(:name => 'Rice')
-      recipe = Recipe.create!(:name => 'Martini Chicken', :category => category)
-      recipe.ingredients.create!(:name => 'Paprica')
-      recipe.ingredients.create!(:name => 'Tomatoes')
-      recipe.index_search_text
-      Recipe.search('Rice').to_a.should == [recipe]
-      Recipe.search('Martini').to_a.should == [recipe]
-      Recipe.search('Paprica').to_a.should == [recipe]
-      Recipe.search('Tomatoes').to_a.should == [recipe]
-    end
+    describe 'indexing fields from associated records'
 
-    it 'should automatically reindex itself when an associated record changes if that associated model has a .part_of_search_text_for directive' do
-      category = Recipe::Category.create!(:name => 'Rice')
-      recipe = category.recipes.create!(:name => 'Martini Chicken')
-      ingredient = recipe.ingredients.create!(:name => 'Paprica')
-      category.update_attributes!(:name => 'Noodles')
-      ingredient.update_attributes!(:name => 'Onions')
-      Recipe.search('Noodles').to_a.should == [recipe]
-      Recipe.search('Onion').to_a.should == [recipe]
-      puts "----------------------"
-      p category.recipes
-      puts "- - - - - -"
-      category.destroy
-      # debugger
-      Recipe.search('Noodles').to_a.should be_empty
-    end
+      it 'should allow to index fields from an associated record' do
+        category = Recipe::Category.create!(:name => 'Rice')
+        recipe = Recipe.create!(:name => 'Martini Chicken', :category => category)
+        recipe.ingredients.create!(:name => 'Paprica')
+        recipe.ingredients.create!(:name => 'Tomatoes')
+        Recipe.search('Rice').to_a.should == [recipe]
+        Recipe.search('Martini').to_a.should == [recipe]
+        Recipe.search('Paprica').to_a.should == [recipe]
+        Recipe.search('Tomatoes').to_a.should == [recipe]
+      end
+
+      context 'if the associated model has a .part_of_search_text_for directive' do
+
+        it 'should automatically reindex itself when an associated record changes' do
+          category = Recipe::Category.create!(:name => 'Rice')
+          recipe = category.recipes.create!(:name => 'Martini Chicken')
+          ingredient = recipe.ingredients.create!(:name => 'Paprica')
+          category.update_attributes!(:name => 'Noodles')
+          ingredient.update_attributes!(:name => 'Onions')
+          Recipe.search('Noodles').to_a.should == [recipe]
+          Recipe.search('Onion').to_a.should == [recipe]
+          category.reload
+          category.destroy
+          Recipe.search('Noodles').to_a.should be_empty
+        end
+
+        #it 'should automatically reindex both containers if the container changes' do
+        #  recipe1 = Recipe.create!(:name => 'Martini Chicken')
+        #  recipe2 = Recipe.create!(:name => 'Whiskey Chicken')
+        #  ingredient = recipe1.ingredients.create!(:name => 'Paprica')
+        #  Recipe.search('Paprica').to_a.should == [recipe1]
+        #  ingredient.update_attributes!(:recipe => recipe2)
+        #  Recipe.search('Paprica').to_a.should == [recipe2]
+        #end
+
+      end
 
   end
 

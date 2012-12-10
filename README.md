@@ -157,10 +157,12 @@ First we need to create the `search_texts` table. Since we're on Rails, we will 
       def self.up
         create_table :search_texts, :options => 'ENGINE=MyISAM' do |t|
           t.integer :source_id
-          t.string  :source_type
-          t.text    :words
+          t.string :source_type
+          t.boolean :stale
+          t.text :words
         end
-        add_index :search_texts, [:source_type, :source_id]
+        add_index :search_texts, [:source_type, :source_id] # for updates
+        add_index :search_texts, [:source_type, :stale] # for refreshs
         execute 'CREATE FULLTEXT INDEX fulltext_index_words ON search_texts (words)'
       end
     
@@ -201,23 +203,48 @@ You're done! You can now search `Contact` using the same API you used with [LIKE
 
 Note that you didn't need to teach your model how to process text queries by defining a mapper with `search_by :text { ... }`. The `search_text` macro defines this mapper for you.
 
-Also note that if you migrated an existing table to FULLTEXT search, you need to build the index the first time. See below.
+Also note that if you migrated an existing table to FULLTEXT search, you need to [build the index the first time](#building-the-index-for-existing-records).
 
 
-### Keeping the index in sync
-    
-Dusen will automatically update the index whenever your model's records are created, updated or destroyed. If you migrated an existing table to FULLTEXT search, you need to 
+### Building the index for existing records
 
-
-Call when something associated changes
-
-
-
-    record.index_search_text
+If you migrated an existing table to FULLTEXT search, you must build the index for all existing records:
 
     Model.all.each(&index_search_text)
 
+You only need to do this once. Dusen will automatically index all further changes to your records.
 
+### Indexing changes in associated records
+
+Dusen lets you index words from associated models. When you do this you need to reindex the indexed model whenever an associated record changes, or else the indexed text will be out of date.
+
+As an example we will associate `Contact` with an `Organization` and make it searchable by the name of her `Organization`:
+
+    class Contact < ActiveRecord::Base
+      
+      belongs_to :organization
+      
+      search_syntax
+
+      search_text do
+        [name, email, organization && organization.name]
+      end
+
+    end
+
+To make sure contacts will reindex when the organization changes its name, use the `part_of_search_text_for` macro:
+
+    class Organization < ActiveRecord::Base
+
+      has_many :contacts
+ 
+      part_of_search_text_for do
+        contacts
+      end
+
+    end
+
+All records returned by `part_of_search_text_for` will be reindexed when the organization is changed or destroyed.
 
 
 Programmatic access without DSL
@@ -245,9 +272,10 @@ Here are some method calls to get you started:
 Development
 -----------
 
-Test applications for various Rails versions lives in `spec`. You can run specs from the project root by saying:
-
-    bundle exec rake all:spec
+- Test applications for various Rails versions lives in `spec`.
+- You need to create a MySQL database and put credentials into `spec/shared/app_root/config/database.yml`.
+- You can bundle all test applications by saying `bundle exec rake all:bundle`
+- You can run specs from the project root by saying `bundle exec rake all:spec`.
 
 If you would like to contribute:
 

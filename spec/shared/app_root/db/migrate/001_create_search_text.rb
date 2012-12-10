@@ -7,7 +7,7 @@ class CreateSearchText < ActiveRecord::Migration
       t.boolean :stale
       t.text    :words
     end
-    add_index :search_texts, [:source_type, :source_id] # for update
+    add_index :search_texts, [:source_type, :source_id] # for updates
     add_index :search_texts, [:source_type, :stale] # for refreshs
     execute 'CREATE FULLTEXT INDEX fulltext_index_words ON search_texts (words)'
   end

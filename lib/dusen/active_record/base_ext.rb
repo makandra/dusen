@@ -10,7 +10,6 @@ module Dusen
           Dusen::Description.parse_syntax(@search_syntax, &dsl) if dsl
           unless singleton_class.method_defined?(:search)
             singleton_class.send(:define_method, :search) do |query_string|
-              Dusen::ActiveRecord::SearchText.rewrite_all_invalid(self) if search_text?
               @search_syntax.search(self, query_string)
             end
           end
@@ -21,29 +20,38 @@ module Dusen
           !!@has_search_text
         end
 
+        def index_search_texts
+          Dusen::ActiveRecord::SearchText.rewrite_all_invalid(self)
+        end
+
         def search_text(&text)
 
           @has_search_text = true
 
-          has_one :search_text, :as => :source, :dependent => :destroy, :class_name => '::Dusen::ActiveRecord::SearchText'
+          has_one :search_text, :as => :source, :dependent => :destroy, :class_name => '::Dusen::ActiveRecord::SearchText', :inverse_of => :source
 
-          after_create :index_search_text
+          after_create :create_search_text
 
           after_update :invalidate_search_text
 
           define_method :index_search_text do
             new_text = instance_eval(&text)
             new_text = Array.wrap(new_text).flatten.collect(&:to_s).join(' ').gsub(/\s+/, ' ').strip
-            Dusen::ActiveRecord::SearchText.rewrite(self, new_text)
+            search_text || build_search_text
+            search_text.update_words!(new_text)
             true
           end
 
           define_method :invalidate_search_text do
-            unless @search_text_invalidated
-              Dusen::ActiveRecord::SearchText.invalidate(self)
-            end
-            @search_text_invalidated = false
+            search_text.invalidate!
             true
+          end
+
+          private
+
+          define_method :create_search_text do
+            build_search_text(:stale => true)
+            search_text.save!
           end
 
           search_syntax do
@@ -56,32 +64,16 @@ module Dusen
 
         def part_of_search_text_for(&associations)
           invalidate_associations_method = "invalidate_search_text_for_associated_records"
-          remember_associations_method = "remember_associated_records_with_search_text"
-          associations_method = "associated_records_with_search_text"
 
-          before_validation remember_associations_method
-          before_destroy remember_associations_method
-
-          after_save invalidate_associations_method
-          after_destroy invalidate_associations_method
+          before_save invalidate_associations_method
+          before_destroy invalidate_associations_method
 
           private
 
           define_method invalidate_associations_method do
-            records = @associated_records_with_search_text | send(associations_method)
-            p records
-            records.each(&:invalidate_search_text)
-            @associated_records_with_search_text = nil
+            associated_records = Array.wrap(instance_eval(&associations)).flatten
+            associated_records.each(&:invalidate_search_text)
             true
-          end
-
-          define_method remember_associations_method do
-            @associated_records_with_search_text = send(associations_method)
-            true
-          end
-
-          define_method associations_method do
-            Array.wrap(instance_eval(&associations)).flatten
           end
 
         end

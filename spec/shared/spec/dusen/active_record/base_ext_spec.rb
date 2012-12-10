@@ -104,14 +104,17 @@ describe ActiveRecord::Base do
 
     it 'should automatically reindex itself when an associated record changes if that associated model has a .part_of_search_text_for directive' do
       category = Recipe::Category.create!(:name => 'Rice')
-      recipe = Recipe.create!(:name => 'Martini Chicken', :category => category)
+      recipe = category.recipes.create!(:name => 'Martini Chicken')
       ingredient = recipe.ingredients.create!(:name => 'Paprica')
       category.update_attributes!(:name => 'Noodles')
       ingredient.update_attributes!(:name => 'Onions')
       Recipe.search('Noodles').to_a.should == [recipe]
       Recipe.search('Onion').to_a.should == [recipe]
-      category.reload
+      puts "----------------------"
+      p category.recipes
+      puts "- - - - - -"
       category.destroy
+      # debugger
       Recipe.search('Noodles').to_a.should be_empty
     end
 

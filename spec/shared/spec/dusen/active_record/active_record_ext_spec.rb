@@ -63,7 +63,7 @@ describe ActiveRecord::Base do
 
   describe 'for a model without an associated FULLTEXT table' do
 
-    subject { UserWithoutFulltext }
+    subject { User::WithoutFulltext }
 
     it_should_behave_like 'model with search syntax'
 
@@ -71,12 +71,12 @@ describe ActiveRecord::Base do
 
   describe 'for a model with an associated FULLTEXT table' do
 
-    subject { UserWithFulltext }
+    subject { User::WithFulltext }
 
     it_should_behave_like 'model with search syntax'
 
     it 'should be shadowed by a Dusen::ActiveRecord::SearchText, which is created, updated and destroyed with the record' do
-      user = UserWithFulltext.create!(:name => 'name', :email => 'email', :city => 'city')
+      user = User::WithFulltext.create!(:name => 'name', :email => 'email', :city => 'city')
       Dusen::ActiveRecord::SearchText.all.collect(&:words).should == ['name email city']
       user.update_attributes!(:email => 'changed_email')
       Dusen::ActiveRecord::SearchText.all.collect(&:words).should == ['name changed_email city']

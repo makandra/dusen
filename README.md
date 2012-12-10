@@ -211,6 +211,8 @@ Dusen will automatically update the index whenever your model's records are crea
 
 Call when something associated changes
 
+
+
     record.index_search_text
 
     Model.all.each(&index_search_text)

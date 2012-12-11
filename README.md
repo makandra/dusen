@@ -208,7 +208,7 @@ Also note that if you migrated an existing table to FULLTEXT search, you need to
 
 If you migrated an existing table to FULLTEXT search, you must build the index for all existing records:
 
-    Model.all.each(&index_search_text)
+    Model.all.each(&:index_search_text)
 
 You only need to do this once. Dusen will automatically index all further changes to your records.
 

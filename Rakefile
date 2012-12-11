@@ -4,6 +4,27 @@ require 'bundler/gem_tasks'
 desc 'Default: Run all specs.'
 task :default => 'all:spec'
 
+namespace :travis_ci do
+
+  desc 'Things to do before Travis CI begins'
+  task :prepare do
+    Rake::Task['travis_ci:create_database'].invoke &&
+    Rake::Task['travis_ci:create_database_yml'].invoke
+  end
+
+  desc 'Creates a test database'
+  task :create_database do
+    system("mysql -e 'create database dusen_test;'")
+  end
+
+  desc 'Creates a database.yml'
+  task :create_database_yml do
+    config_dir = "spec/shared/app_root/config"
+    system("cp #{config_dir}/database.sample.yml #{config_dir}/database.yml")
+  end
+
+end
+
 namespace :all do
 
   desc "Run specs on all spec apps"

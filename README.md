@@ -187,8 +187,6 @@ We now need to your model which text to index. We do this using the `search_text
         [name, street, city, email]
       end
 
-      end
-
     end
 
 You can return any object or array of objects. Dusen will stringify the return value and index those words. Note that indexed words do not need to be fields of your model:

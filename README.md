@@ -212,6 +212,7 @@ If you migrated an existing table to FULLTEXT search, you must build the index f
 
 You only need to do this once. Dusen will automatically index all further changes to your records.
 
+
 ### Indexing changes in associated records
 
 Dusen lets you index words from associated models. When you do this you need to reindex the indexed model whenever an associated record changes, or else the indexed text will be out of date.
@@ -243,6 +244,28 @@ To make sure contacts will reindex when the organization changes its name, use t
     end
 
 All records returned by `part_of_search_text_for` will be reindexed when the organization is changed or destroyed.
+
+
+### Obtaining the currently indexed words
+
+To access a string of words that is indexed for a record, call `#search_text`:
+
+    contact = Contact.create!(:email => 'foo@bar.com', :city => 'Foohausen')
+    context.search_text # => "foo@bar.com Foohausen"
+
+This can be practical if you want to index a record under the same words as its association:
+
+    class Contact < ActiveRecord::Base
+
+      belongs_to :organization
+
+      search_syntax
+
+      search_text do
+        [name, email, organization.search_text]
+      end
+
+    end
 
 
 Programmatic access without DSL

@@ -28,30 +28,34 @@ module Dusen
 
           @has_search_text = true
 
-          has_one :search_text, :as => :source, :dependent => :destroy, :class_name => '::Dusen::ActiveRecord::SearchText', :inverse_of => :source
+          has_one :search_text_record, :as => :source, :dependent => :destroy, :class_name => '::Dusen::ActiveRecord::SearchText', :inverse_of => :source
 
-          after_create :create_search_text
+          after_create :create_initial_search_text_record
 
           after_update :invalidate_search_text
 
-          define_method :index_search_text do
+          define_method :search_text do
             new_text = instance_eval(&text)
             new_text = Array.wrap(new_text).flatten.collect(&:to_s).join(' ').gsub(/\s+/, ' ').strip
-            search_text || build_search_text
-            search_text.update_words!(new_text)
+            new_text
+          end
+
+          define_method :index_search_text do
+            search_text_record.present? or build_search_text_record
+            search_text_record.update_words!(search_text)
             true
           end
 
           define_method :invalidate_search_text do
-            search_text.invalidate!
+            search_text_record.invalidate!
             true
           end
 
           private
 
-          define_method :create_search_text do
-            build_search_text(:stale => true)
-            search_text.save!
+          define_method :create_initial_search_text_record do
+            build_search_text_record(:stale => true)
+            search_text_record.save!
           end
 
           search_syntax do

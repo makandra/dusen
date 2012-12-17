@@ -4,7 +4,7 @@ module Dusen
 
       self.table_name = 'search_texts'
 
-      belongs_to :source, :polymorphic => true, :inverse_of => :search_text
+      belongs_to :source, :polymorphic => true, :inverse_of => :search_text_record
 
       def update_words!(words)
         update_attributes!(:words => words, :stale => false)

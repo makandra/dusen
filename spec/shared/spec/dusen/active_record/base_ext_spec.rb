@@ -94,7 +94,7 @@ describe ActiveRecord::Base do
       Dusen::ActiveRecord::SearchText.count.should be_zero
     end
 
-    describe 'indexing fields from associated records'
+    describe 'indexing fields from associated records' do
 
       it 'should allow to index fields from an associated record' do
         category = Recipe::Category.create!(:name => 'Rice')
@@ -132,6 +132,18 @@ describe ActiveRecord::Base do
         #end
 
       end
+
+    end
+
+    describe '#search_text' do
+
+      it 'should return the currently indexable words for this record' do
+        category = Recipe::Category.create!(:name => 'Rice')
+        recipe = Recipe.create!(:name => 'Martini Chicken', :category => category)
+        recipe.search_text.should == "Martini Chicken Rice"
+      end
+
+    end
 
   end
 

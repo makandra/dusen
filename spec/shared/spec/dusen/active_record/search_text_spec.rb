@@ -20,4 +20,6 @@ describe Dusen::ActiveRecord::SearchText do
 
   end
 
+
+
 end

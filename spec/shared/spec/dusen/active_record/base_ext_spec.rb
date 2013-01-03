@@ -12,6 +12,14 @@ shared_examples_for 'model with search syntax' do
       subject.search('Abraham').to_a.should == [match]
     end
 
+    it 'should not find stale text after fields were updated (bugfix)' do
+      match = subject.create!(:name => 'Abraham')
+      no_match = subject.create!(:name => 'Elizabath')
+      match.update_attributes!(:name => 'Johnny')
+      subject.search('Abraham').to_a.should be_empty
+      subject.search('Johnny').to_a.should == [match]
+    end
+
     it 'should AND multiple words' do
       match = subject.create!(:name => 'Abraham Lincoln')
       no_match = subject.create!(:name => 'Abraham')
@@ -84,14 +92,31 @@ describe ActiveRecord::Base do
     it 'should be shadowed by a Dusen::ActiveRecord::SearchText, which is created, updated and destroyed with the record' do
       user = User::WithFulltext.create!(:name => 'name', :email => 'email', :city => 'city')
       User::WithFulltext.index_search_texts
-      Dusen::ActiveRecord::SearchText.all.collect(&:words).should == ['name email city']
+
+      search_texts = Dusen::ActiveRecord::SearchText.all
+      search_texts.size.should == 1
+      search_texts[0].words.should == 'name email city'
+      search_texts[0].should_not be_stale
+
       user.reload
       user.update_attributes!(:email => 'changed_email')
+
+      search_texts = Dusen::ActiveRecord::SearchText.all
+      search_texts.size.should == 1
+      search_texts[0].words.should == 'name email city'
+      search_texts[0].should be_stale
+
       User::WithFulltext.index_search_texts
-      Dusen::ActiveRecord::SearchText.all.collect(&:words).should == ['name changed_email city']
+
+      search_texts = Dusen::ActiveRecord::SearchText.all
+      search_texts.size.should == 1
+      search_texts[0].words.should == 'name changed_email city'
+      search_texts[0].should_not be_stale
+
       user.destroy
-      User::WithFulltext.index_search_texts
-      Dusen::ActiveRecord::SearchText.count.should be_zero
+
+      search_texts = Dusen::ActiveRecord::SearchText.all
+      search_texts.size.should be_zero
     end
 
     describe 'indexing fields from associated records' do

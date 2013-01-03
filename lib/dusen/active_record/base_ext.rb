@@ -21,7 +21,7 @@ module Dusen
         end
 
         def index_search_texts
-          Dusen::ActiveRecord::SearchText.rewrite_all_invalid(self)
+          Dusen::ActiveRecord::SearchText.synchronize_model(self)
         end
 
         def search_text(&text)

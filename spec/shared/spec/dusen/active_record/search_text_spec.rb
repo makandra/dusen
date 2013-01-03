@@ -20,6 +20,24 @@ describe Dusen::ActiveRecord::SearchText do
 
   end
 
+  describe '.synchronize_model' do
 
+    it 'should refresh stale index records' do
+      user = User::WithFulltext.create!(:name => 'Abraham')
+      user.search_text_record.should be_stale
+      Dusen::ActiveRecord::SearchText.synchronize_model(User::WithFulltext)
+      user.search_text_record(true).should_not be_stale
+    end
+
+    it 'should remove index records that no longer map to a model record' do
+      user = User::WithFulltext.create!
+      Dusen::ActiveRecord::SearchText.count.should == 1
+      User::WithFulltext.delete_all
+      Dusen::ActiveRecord::SearchText.count.should == 1
+      Dusen::ActiveRecord::SearchText.synchronize_model(User::WithFulltext)
+      Dusen::ActiveRecord::SearchText.count.should be_zero
+    end
+
+  end
 
 end

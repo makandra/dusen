@@ -1,3 +1,5 @@
+require 'set'
+
 module Dusen
   module ActiveRecord
     class SearchText < ::ActiveRecord::Base
@@ -22,14 +24,23 @@ module Dusen
         scoped(:conditions => { :stale => true })
       end
 
-      def self.rewrite_all_invalid(model)
+      def self.synchronize_model(model)
         invalid_index_records = for_model(model).invalid
-        ids = Util.collect_column(invalid_index_records, :source_id)
-        Util.append_scope_conditions(model, :id => ids).each(&:index_search_text)
+        source_ids = Util.collect_column(invalid_index_records, :source_id)
+        pending_source_ids = Set.new(source_ids)
+        source_records = Util.append_scope_conditions(model, :id => source_ids).to_a
+        source_records.each do |source_record|
+          source_record.index_search_text
+          pending_source_ids.delete(source_record.id)
+        end
+        if pending_source_ids.present?
+          invalid_index_records.delete_all(:source_id => pending_source_ids.to_a)
+        end
+        true
       end
 
       def self.match(model, words)
-        rewrite_all_invalid(model) if model.search_text?
+        synchronize_model(model) if model.search_text?
         Dusen::Util.append_scope_conditions(
           model,
           :id => matching_source_ids(model, words)

@@ -28,10 +28,12 @@ module Dusen
         invalid_index_records = for_model(model).invalid
         source_ids = Util.collect_column(invalid_index_records, :source_id)
         pending_source_ids = Set.new(source_ids)
-        source_records = Util.append_scope_conditions(model, :id => source_ids).to_a
-        source_records.each do |source_record|
-          source_record.index_search_text
-          pending_source_ids.delete(source_record.id)
+        source_records = Util.append_scope_conditions(model, :id => source_ids)
+        source_records.find_in_batches do |batch|
+          batch.each do |source_record|
+            source_record.index_search_text
+            pending_source_ids.delete(source_record.id)
+          end
         end
         if pending_source_ids.present?
           invalid_index_records.delete_all(:source_id => pending_source_ids.to_a)

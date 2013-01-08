@@ -41,12 +41,13 @@ module Dusen
           end
 
           define_method :index_search_text do
-            search_text_record.present? or build_search_text_record
+            ensure_search_text_record_built
             search_text_record.update_words!(search_text)
             true
           end
 
           define_method :invalidate_search_text do
+            ensure_search_text_record_built
             search_text_record.invalidate!
             true
           end
@@ -54,8 +55,13 @@ module Dusen
           private
 
           define_method :create_initial_search_text_record do
-            build_search_text_record(:stale => true)
+            ensure_search_text_record_built(:stale => true)
             search_text_record.save!
+          end
+
+          define_method :ensure_search_text_record_built do |*args|
+            attributes = args.first || {}
+            search_text_record.present? or build_search_text_record(attributes)
           end
 
           search_syntax do

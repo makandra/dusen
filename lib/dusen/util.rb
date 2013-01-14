@@ -117,5 +117,10 @@ module Dusen
     #  ::ActiveRecord::Base.connection.select_values(query).collect(&:to_i)
     #end
 
+    def normalize_word_boundaries(text)
+      unwanted_mysql_boundary = /[\.;]/
+      text.gsub(unwanted_mysql_boundary, '')
+    end
+
   end
 end

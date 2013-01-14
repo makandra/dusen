@@ -3,7 +3,7 @@
 module Dusen
   class Parser
 
-    WESTERNISH_WORD_CHARACTER =  '\\w\\-\\.@_ÄÖÜäöüß' # this is wrong on so many levels
+    WESTERNISH_WORD_CHARACTER =  '\\w\\-\\.;@_ÄÖÜäöüß' # this is wrong on so many levels
     TEXT_QUERY = /(?:"([^"]+)"|([#{WESTERNISH_WORD_CHARACTER}]+))/
     FIELD_QUERY = /(\w+)\:#{TEXT_QUERY}/
 

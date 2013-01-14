@@ -18,4 +18,18 @@ describe Dusen::Util do
 
   end
 
+  describe '#normalize_word_boundaries' do
+
+    it 'should remove characters that MySQL would mistakenly consider a word boundary' do
+      Dusen::Util.normalize_word_boundaries("E.ON Bayern").should == 'EON Bayern'
+      Dusen::Util.normalize_word_boundaries("E.ON E.ON").should == 'EON EON'
+      Dusen::Util.normalize_word_boundaries("E;ON").should == 'EON'
+    end
+
+    it 'should remove characters that MySQL would mistakenly consider a word boundary' do
+      Dusen::Util.normalize_word_boundaries("Foobar Raboof").should == 'Foobar Raboof'
+    end
+
+  end
+
 end

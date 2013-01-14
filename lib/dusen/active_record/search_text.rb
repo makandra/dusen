@@ -9,6 +9,7 @@ module Dusen
       belongs_to :source, :polymorphic => true, :inverse_of => :search_text_record
 
       def update_words!(text)
+        text = Util.normalize_word_boundaries(text)
         update_attributes!(:words => text, :stale => false)
       end
 
@@ -50,6 +51,7 @@ module Dusen
       end
 
       def self.matching_source_ids(model, phrases)
+        phrases = phrases.collect { |phrase| Util.normalize_word_boundaries(phrase) }
         conditions = [
           'MATCH (words) AGAINST (? IN BOOLEAN MODE)',
           Dusen::Util.boolean_fulltext_query(phrases)

@@ -8,8 +8,8 @@ module Dusen
 
       belongs_to :source, :polymorphic => true, :inverse_of => :search_text_record
 
-      def update_words!(words)
-        update_attributes!(:words => words, :stale => false)
+      def update_words!(text)
+        update_attributes!(:words => text, :stale => false)
       end
 
       def invalidate!
@@ -41,18 +41,18 @@ module Dusen
         true
       end
 
-      def self.match(model, words)
+      def self.match(model, phrases)
         synchronize_model(model) if model.search_text?
         Dusen::Util.append_scope_conditions(
           model,
-          :id => matching_source_ids(model, words)
+          :id => matching_source_ids(model, phrases)
         )
       end
 
-      def self.matching_source_ids(model, words)
+      def self.matching_source_ids(model, phrases)
         conditions = [
           'MATCH (words) AGAINST (? IN BOOLEAN MODE)',
-          Dusen::Util.boolean_fulltext_query(words)
+          Dusen::Util.boolean_fulltext_query(phrases)
         ]
         matching_texts = Dusen::Util.append_scope_conditions(for_model(model), conditions)
         Dusen::Util.collect_column(matching_texts, :source_id)

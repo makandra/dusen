@@ -56,6 +56,10 @@ shared_examples_for 'model with search syntax' do
       subject.search('Abraham').to_a.should == [match]
     end
 
+    it 'should find words where one letter is separated from other letters by a period' do
+      pending
+    end
+
   end
 
   describe '.search_syntax' do

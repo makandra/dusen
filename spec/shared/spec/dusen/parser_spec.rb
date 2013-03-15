@@ -9,6 +9,11 @@ describe Dusen::Parser do
       query.collect(&:value).should == ['field1-value', 'field2-value', 'word1', 'word2']
     end
 
+    it 'should not consider the dash to be a word boundary' do
+      query = Dusen::Parser.parse('Baden-Baden')
+      query.collect(&:value).should == ['Baden-Baden']
+    end
+
   end
 
 end

@@ -24,6 +24,7 @@ describe Dusen::Util do
       Dusen::Util.normalize_word_boundaries("E.ON Bayern").should == 'EON Bayern'
       Dusen::Util.normalize_word_boundaries("E.ON E.ON").should == 'EON EON'
       Dusen::Util.normalize_word_boundaries("E;ON").should == 'EON'
+      Dusen::Util.normalize_word_boundaries("Baden-Baden").should == 'BadenBaden'
     end
 
     it 'should remove characters that MySQL would mistakenly consider a word boundary' do

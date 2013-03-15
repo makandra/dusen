@@ -118,7 +118,7 @@ module Dusen
     #end
 
     def normalize_word_boundaries(text)
-      unwanted_mysql_boundary = /[\.;]/
+      unwanted_mysql_boundary = /[\.;\-]/
       text.gsub(unwanted_mysql_boundary, '')
     end
 

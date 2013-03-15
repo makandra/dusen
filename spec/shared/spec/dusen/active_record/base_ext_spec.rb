@@ -64,8 +64,13 @@ shared_examples_for 'model with search syntax' do
     it 'should find words where one letter is separated from other letters by a period' do
       match = subject.create!(:name => 'E;ONNNEN')
       subject.search('E;ONNNEN')
-      # debugger
       subject.search('E;ONNNEN').to_a.should == [match]
+    end
+
+    it 'should distinguish between "Baden" and "Baden-Baden" (bugfix)' do
+      match = subject.create!(:city => 'Baden-Baden')
+      no_match = subject.create!(:city => 'Baden')
+      subject.search('Baden-Baden').all.should == [match]
     end
 
   end

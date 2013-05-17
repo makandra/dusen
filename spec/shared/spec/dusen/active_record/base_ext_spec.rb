@@ -70,7 +70,22 @@ shared_examples_for 'model with search syntax' do
     it 'should distinguish between "Baden" and "Baden-Baden" (bugfix)' do
       match = subject.create!(:city => 'Baden-Baden')
       no_match = subject.create!(:city => 'Baden')
-      subject.search('Baden-Baden').all.should == [match]
+      subject.search('Baden-Baden').to_a.should == [match]
+    end
+
+    context 'when the given query is blank' do
+
+      it 'returns all records' do
+        match = subject.create!
+        subject.search('').to_a.should == [match]
+      end
+
+      it 'respects an existing scope chain' do
+        match = subject.create!(:name => 'Abraham')
+        no_match = subject.create!(:name => 'Elizabath')
+        subject.scoped(:conditions => { :name => 'Abraham' }).search('').to_a.should == [match]
+      end
+
     end
 
   end

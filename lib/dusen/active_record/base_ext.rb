@@ -10,7 +10,7 @@ module Dusen
           Dusen::Description.parse_syntax(@search_syntax, &dsl) if dsl
           unless singleton_class.method_defined?(:search)
             singleton_class.send(:define_method, :search) do |query_string|
-              @search_syntax.search(self, query_string)
+              @search_syntax.search(scoped({}), query_string)
             end
           end
           @search_syntax

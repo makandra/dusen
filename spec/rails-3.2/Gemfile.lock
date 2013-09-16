@@ -1,7 +1,7 @@
 PATH
   remote: ../..
   specs:
-    dusen (0.4.6)
+    dusen (0.4.7)
       rails
 
 GEM

@@ -37,7 +37,7 @@ Under the hood the search will be performed using [LIKE queries](http://dev.mysq
 Our example will be a simple address book:
 
     class Contact < ActiveRecord::Base
-      validates_presence_of :name, :street, :city, :name
+      validates_presence_of :name, :street, :city, :email
     end
 
 

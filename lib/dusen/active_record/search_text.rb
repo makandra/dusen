@@ -27,7 +27,7 @@ module Dusen
 
       def self.synchronize_model(model)
         invalid_index_records = for_model(model).invalid
-        source_ids = Util.collect_column(invalid_index_records, :source_id)
+        source_ids = invalid_index_records.collect_column(:source_id)
         pending_source_ids = Set.new(source_ids)
         source_records = Util.append_scope_conditions(model, :id => source_ids)
         source_records.find_in_batches do |batch|
@@ -57,7 +57,7 @@ module Dusen
           Dusen::Util.boolean_fulltext_query(phrases)
         ]
         matching_texts = Dusen::Util.append_scope_conditions(for_model(model), conditions)
-        Dusen::Util.collect_column(matching_texts, :source_id)
+        matching_texts.collect_column(:source_id)
       end
 
     end

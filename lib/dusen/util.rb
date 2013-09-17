@@ -81,42 +81,6 @@ module Dusen
       print "\033[0m"
     end
 
-    #def scope_to_sql(scope)
-    #  query = if scope.respond_to?(:to_sql)
-    #    scope.to_sql
-    #  else
-    #    scope.construct_finder_sql({})
-    #  end
-    #end
-
-    def scope_to_sql(options = {})
-      if Rails.version < '3'
-        scope.construct_finder_sql(options)
-      else
-        scope.scoped(options).to_sql
-      end
-    end
-
-    def collect_column(scope, column_name, find_options = {})
-      distinct = find_options.delete(:distinct)
-      qualified_column_name = "`#{scope.table_name}`.`#{column_name}`"
-      select = distinct ? "DISTINCT #{qualified_column_name}" : qualified_column_name
-      query = if Rails.version.to_i < 3
-        scope.construct_finder_sql(find_options.merge(:select => select))
-      else
-        scope.scoped(find_options.merge(:select => select)).to_sql
-      end
-      raw_values = scope.connection.select_values(query)
-      column = scope.columns_hash[column_name.to_s] or raise "Could not retrieve column information: #{column_name}"
-      raw_values.collect { |value| column.type_cast(value) }
-    end
-
-    #def collect_ids(scope)
-    #  scope = select_scope_fields(scope, "`#{scope.table_name}`.`id`")
-    #  query = scope_to_sql(scope)
-    #  ::ActiveRecord::Base.connection.select_values(query).collect(&:to_i)
-    #end
-
     def normalize_word_boundaries(text)
       unwanted_mysql_boundary = /[\.;\-]/
       text.gsub(unwanted_mysql_boundary, '')

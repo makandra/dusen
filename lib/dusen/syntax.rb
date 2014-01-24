@@ -38,7 +38,13 @@ module Dusen
     private
 
     DEFAULT_UNKNOWN_SCOPER = lambda do |scope, *args|
-      scope.where('1=2')
+      if scope.respond_to?(:where)
+        # Rails 3
+        scope.where('1=2')
+      else
+        # Rails 2
+        scope.scoped(:conditions => ['1=2'])
+      end
     end
 
     def unknown_scoper

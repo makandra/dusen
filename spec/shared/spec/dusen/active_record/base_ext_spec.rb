@@ -38,6 +38,11 @@ shared_examples_for 'model with search syntax' do
       subject.search('email:foo@bar.com').to_a.should == [match]
     end
 
+    it 'should find no records if a nonexistent qualifier is used' do
+      subject.create!(:name => 'someuser', :email => 'foo@bar.com')
+      subject.search('nonexistent_qualifier:someuser email:foo@bar.com').to_a.should == []
+    end
+
     it 'should allow phrases as values for qualified field queries' do
       match = subject.create!(:name => 'Foo Bar', :city => 'Foo Bar')
       no_match = subject.create!(:name => 'Foo Bar', :city => 'Bar Foo')

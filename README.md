@@ -130,6 +130,16 @@ Note that you can combine text tokens and field tokens:
 
      > Contact.search('fooville email:foo@bar.com')
     => Contact.where_like(columns => 'fooville').where(:email => 'foo@bar.com')
+    
+### Caveat
+
+If you search for a phrase containing a colon (e.g. `deploy:rollback`), Dusen
+will mistake the first part as a – nonexistent – qualifier and return an empty
+set.
+
+To prevent that, prefix your query with the default qualifier `text`:
+
+    text:deploy:rollback
 
 
 Processing full text queries with FULLTEXT indexes

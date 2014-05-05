@@ -3,7 +3,7 @@ PATH
   specs:
     dusen (0.4.9)
       activerecord
-      edge_rider (>= 0.2.3)
+      edge_rider (>= 0.2.5)
 
 GEM
   remote: https://rubygems.org/
@@ -41,7 +41,7 @@ GEM
     columnize (0.3.6)
     database_cleaner (1.0.1)
     diff-lcs (1.2.4)
-    edge_rider (0.2.3)
+    edge_rider (0.2.5)
       activerecord
     erubis (2.6.6)
       abstract (>= 1.0.0)

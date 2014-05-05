@@ -26,11 +26,11 @@ module Dusen
       end
 
       def self.synchronize_model(model)
+        model = model.origin_class
         invalid_index_records = for_model(model).invalid
         source_ids = invalid_index_records.collect_column(:source_id)
         pending_source_ids = Set.new(source_ids)
-        source_records = Util.append_scope_conditions(model, :id => source_ids)
-        source_records.find_in_batches do |batch|
+        model.find_in_batches(:conditions => { :id => source_ids } ) do |batch|
           batch.each do |source_record|
             source_record.index_search_text
             pending_source_ids.delete(source_record.id)

@@ -38,6 +38,16 @@ describe Dusen::ActiveRecord::SearchText do
       Dusen::ActiveRecord::SearchText.count.should be_zero
     end
 
+    it 'should not remove non-orphaned index records when called with a scope that excludes their source (bugfix)' do
+      user1 = User::WithFulltext.create!
+      user2 = User::WithFulltext.create!
+      Dusen::ActiveRecord::SearchText.count.should == 2
+      scope = Dusen::Util.append_scope_conditions(User::WithFulltext, :id => [user2.id])
+      Dusen::ActiveRecord::SearchText.synchronize_model(scope)
+      Dusen::ActiveRecord::SearchText.count.should == 2
+    end
+
   end
 
 end
+

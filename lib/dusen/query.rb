@@ -34,11 +34,22 @@ module Dusen
     end
 
     def condensed
-      texts = tokens.select(&:text?).collect(&:value)
+      positive_texts = positive.select(&:text?).collect(&:value)
+      negative_texts = negative.select(&:text?).collect(&:value)
       field_tokens = tokens.reject(&:text?)
+
       condensed_tokens = field_tokens
-      condensed_tokens << Token.new(texts) if texts.present?
+      condensed_tokens << Token.new('text', positive_texts, false) if positive_texts.present?
+      condensed_tokens << Token.new('text', negative_texts, true) if negative_texts.present?
       self.class.new(condensed_tokens)
+    end
+
+    def positive
+      tokens.reject(&:negative?)
+    end
+
+    def negative
+      tokens.select(&:negative?)
     end
 
   end

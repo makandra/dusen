@@ -78,6 +78,28 @@ shared_examples_for 'model with search syntax' do
       subject.search('Baden-Baden').to_a.should == [match]
     end
 
+    context 'with excludes' do
+
+      it 'should exclude words with prefix - (minus)' do
+        match = subject.create!(:name => 'Sunny Flower')
+        no_match = subject.create!(:name => 'Sunny Power')
+        subject.search('Sunny -Power').to_a.should == [match]
+      end
+
+      it 'should exclude phrases with prefix - (minus)' do
+        match = subject.create!(:name => 'Buch Tastatur Schreibtisch')
+        no_match = subject.create!(:name => 'Buch Schreibtisch Tastatur')
+        subject.search('Buch -"Schreibtisch Tastatur"').to_a.should == [match]
+      end
+
+      it 'should exclude qualified fields with prefix - (minus)' do
+        match = subject.create!(:name => 'Abraham', :city => 'Foohausen')
+        no_match = subject.create!(:name => 'Abraham', :city => 'Barhausen')
+        subject.search('Abraham city:-Barhausen').to_a.should == [match]
+      end
+
+    end
+
     context 'when the given query is blank' do
 
       it 'returns all records' do

@@ -4,7 +4,7 @@ module Dusen
   class Parser
 
     WESTERNISH_WORD_CHARACTER =  '\\w\\-\\.;@_ÄÖÜäöüß' # this is wrong on so many levels
-    TEXT_QUERY = /(?:"([^"]+)"|([#{WESTERNISH_WORD_CHARACTER}]+))/
+    TEXT_QUERY = /(?:(\-)?"([^"]+)"|(\-)?([#{WESTERNISH_WORD_CHARACTER}]+))/
     FIELD_QUERY = /(\w+)\:#{TEXT_QUERY}/
 
     def self.parse(query_string)
@@ -17,16 +17,18 @@ module Dusen
 
     def self.extract_text_query_tokens(query_string, query)
       while query_string.sub!(TEXT_QUERY, '')
-        value = "#{$1}#{$2}"
-        query << Token.new(value)
+        value = "#{$2}#{$4}"
+        negative = "#{$1}#{$3}" == "-"
+        query << Token.new('text', value, negative)
       end
     end
 
     def self.extract_field_query_tokens(query_string, query)
       while query_string.sub!(FIELD_QUERY, '')
         field = $1
-        value = "#{$2}#{$3}"
-        query << Token.new(field, value)
+        value = "#{$3}#{$5}"
+        negative = "#{$2}#{$4}" == "-"
+        query << Token.new(field, value, negative)
       end
     end
 

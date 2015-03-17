@@ -4,7 +4,7 @@ require 'spec_helper'
 
 shared_examples_for 'model with search syntax' do
 
-  describe '.search' do
+  describe '#search' do
 
     it 'should find records by given words' do
       match = subject.create!(:name => 'Abraham')
@@ -76,6 +76,62 @@ shared_examples_for 'model with search syntax' do
       match = subject.create!(:city => 'Baden-Baden')
       no_match = subject.create!(:city => 'Baden')
       subject.search('Baden-Baden').to_a.should == [match]
+    end
+
+    context 'with excludes' do
+
+      it 'should exclude words with prefix - (minus)' do
+        match = subject.create!(:name => 'Sunny Flower')
+        no_match = subject.create!(:name => 'Sunny Power')
+        no_match2 = subject.create!(:name => 'Absolutly no match')
+        subject.search('Sunny -Power').to_a.should == [match]
+      end
+
+      it 'should exclude phrases with prefix - (minus)' do
+        match = subject.create!(:name => 'Buch Tastatur Schreibtisch')
+        no_match = subject.create!(:name => 'Buch Schreibtisch Tastatur')
+        no_match2 = subject.create!(:name => 'Absolutly no match')
+        subject.search('Buch -"Schreibtisch Tastatur"').to_a.should == [match]
+      end
+
+      it 'should exclude qualified fields with prefix - (minus)' do
+        match = subject.create!(:name => 'Abraham', :city => 'Foohausen')
+        no_match = subject.create!(:name => 'Abraham', :city => 'Barhausen')
+        no_match2 = subject.create!(:name => 'Absolutly no match')
+        subject.search('Abraham city:-Barhausen').to_a.should == [match]
+      end
+
+      it 'should work if the query only contains excluded words' do
+        match = subject.create!(:name => 'Sunny Flower')
+        no_match = subject.create!(:name => 'Sunny Power')
+        subject.search('-Power').to_a.should == [match]
+      end
+
+      it 'should work if the query only contains excluded phrases' do
+        match = subject.create!(:name => 'Buch Tastatur Schreibtisch')
+        no_match = subject.create!(:name => 'Buch Schreibtisch Tastatur')
+        subject.search('-"Schreibtisch Tastatur"').to_a.should == [match]
+      end
+
+      it 'should work if the query only contains excluded qualified fields' do
+        match = subject.create!(:name => 'Abraham', :city => 'Foohausen')
+        no_match = subject.create!(:name => 'Abraham', :city => 'Barhausen')
+        subject.search('city:-Barhausen').to_a.should == [match]
+      end
+
+      it 'respects an existing scope chain when there are only excluded tokens (bugfix)' do
+        match = subject.create!(:name => 'Abraham', :city => 'Foohausen')
+        no_match = subject.create!(:name => 'Abraham', :city => 'Barhausen')
+        subject.scoped(:conditions => { :name => 'Abraham' }).search('-Barhausen').to_a.should == [match]
+      end
+
+      it 'should work if there are fields contained in the search that are NULL (needs NOT COALESCE in syntax#search)' do
+        match = subject.create!(:name => 'Sunny Flower', :city => nil, :email => nil)
+        no_match = subject.create!(:name => 'Sunny Power', :city => nil, :email => nil)
+        no_match2 = subject.create!(:name => 'Absolutly no match')
+        subject.search('Sunny -Power').to_a.should == [match]
+      end
+
     end
 
     context 'when the given query is blank' do

@@ -6,7 +6,7 @@ Comprehensive search solution for ActiveRecord and MySQL
 
 Dusen lets you search ActiveRecord model when all you have is MySQL (no Solr, Sphinx, etc.). Here's what Dusen does for you:
 
-1. It takes a text query in Google-like syntax (e.g. `some words "a phrase" filetype:pdf`)
+1. It takes a text query in Google-like search syntax e.g. `some words "a phrase" filetype:pdf -excluded -"excluded  phrase" filetype:-txt`)
 2. It parses the query into individual tokens.
 3. It lets you define simple mappers that convert a token to an ActiveRecord scope chain. Mappers can match tokens using ActiveRecord's `where` or perform full text searches with either [LIKE queries](#processing-full-text-search-queries-with-like-queries) or [FULLTEXT indexes](#processing-full-text-queries-with-fulltext-indexes) (see [performance analysis](https://makandracards.com/makandra/12813-performance-analysis-of-mysql-s-fulltext-indexes-and-like-queries-for-full-text-search)).
 4. It gives your model a method `Model.search('some query')` that performs all of the above and returns an ActiveRecord scope chain.
@@ -319,7 +319,7 @@ If you would like to contribute:
 - Push your changes **with passing specs**.
 - Send me a pull request.
 
-I'm very eager to keep this gem leightweight and on topic. If you're unsure whether a change would make it into the gem, [talk to me beforehand](mailto:henning.koch@makandra.de).
+I'm very eager to keep this gem lightweight and on topic. If you're unsure whether a change would make it into the gem, [talk to me beforehand](mailto:henning.koch@makandra.de).
 
 
 Credits

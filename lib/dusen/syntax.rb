@@ -17,14 +17,27 @@ module Dusen
     end
 
     def search(root_scope, query)
-      scope = root_scope
       query = parse(query) if query.is_a?(String)
       query = query.condensed
-      query.each do |token|
-        scoper = @scopers[token.field] || unknown_scoper
-        scope = scoper.call(scope, token.value)
+      matches = find_parsed_query(root_scope, query.include)
+      if query.exclude.any?
+        exclude_matches = find_parsed_query(root_scope, query.exclude)
+
+        # extract conditions that were added by exclude tokens
+        sql = exclude_matches.to_sql
+        root_pattern = /\A#{Regexp.quote root_scope.to_sql}/
+        sql =~ root_pattern or raise "Could not find ..."
+        sql = sql.sub(root_pattern, '')
+
+        # negate conditions
+        sql = sql.sub(/^\s*WHERE\s*/i, '')
+        sql = sql.sub(/^\s*AND\s*/i, '')
+        sql = "NOT COALESCE(#{sql}, 0)"
+
+        matches.scoped(:conditions => sql)
+      else
+        matches
       end
-      scope
     end
 
     def fields
@@ -49,6 +62,15 @@ module Dusen
 
     def unknown_scoper
       @unknown_scoper || DEFAULT_UNKNOWN_SCOPER
+    end
+
+    def find_parsed_query(root_scope, query)
+      scope = root_scope
+      query.each do |token|
+        scoper = @scopers[token.field] || unknown_scoper
+        scope = scoper.call(scope, token.value)
+      end
+      scope
     end
 
   end

@@ -34,11 +34,28 @@ module Dusen
     end
 
     def condensed
-      texts = tokens.select(&:text?).collect(&:value)
+      include_texts = include.select(&:text?).collect(&:value)
+      exclude_texts = exclude.select(&:text?).collect(&:value)
       field_tokens = tokens.reject(&:text?)
+
       condensed_tokens = field_tokens
-      condensed_tokens << Token.new(texts) if texts.present?
+      if include_texts.present?
+        options = { :field => 'text', :value => include_texts, :exclude => false }
+        condensed_tokens << Token.new(options)
+      end
+      if exclude_texts.present?
+        options = { :field => 'text', :value => exclude_texts, :exclude => true }
+        condensed_tokens << Token.new(options)
+      end
       self.class.new(condensed_tokens)
+    end
+
+    def include
+      self.class.new tokens.reject(&:exclude?)
+    end
+
+    def exclude
+      self.class.new tokens.select(&:exclude?)
     end
 
   end

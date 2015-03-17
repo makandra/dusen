@@ -3,16 +3,12 @@
 module Dusen
   class Token
 
-    attr_reader :field, :value
+    attr_reader :field, :value, :exclude
 
-    def initialize(*args)
-      if args.length == 2
-        @field, @value = args
-      else
-        @field = 'text'
-        @value = args.first
-      end
-      @field = @field.to_s
+    def initialize(options)
+      @value = options.fetch(:value)
+      @exclude = options.fetch(:exclude)
+      @field = options.fetch(:field).to_s
     end
 
     def to_s
@@ -21,6 +17,10 @@ module Dusen
 
     def text?
       field == 'text'
+    end
+
+    def exclude?
+      exclude
     end
 
   end

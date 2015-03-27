@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_dependency('activerecord')
+  s.add_dependency('activerecord', '>=3.0')
   s.add_dependency('edge_rider', '>=0.2.5')
 
 end

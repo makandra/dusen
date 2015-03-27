@@ -12,17 +12,6 @@ Dusen lets you search ActiveRecord model when all you have is MySQL (no Solr, Sp
 4. It gives your model a method `Model.search('some query')` that performs all of the above and returns an ActiveRecord scope chain.
 
 
-Installation
-------------
-
-In your `Gemfile` say:
-
-    gem 'dusen'
-
-Now run `bundle install` and restart your server.
-
-
-
 Processing full text search queries with LIKE queries
 -----------------------------------------------------
 
@@ -298,6 +287,22 @@ Here are some method calls to get you started:
     query.to_s # => "fooville + foo@bar.com"
 
     syntax.search(Contact, query) # => #<ActiveRecord::Relation>
+
+
+Supported Rails versions
+------------------------
+
+Dusen is tested against Rails 3.0 and Rails 3.2. There is also a branch rails-2-3, which is tested against Rails 2.3.
+
+
+Installation
+------------
+
+In your `Gemfile` say:
+
+    gem 'dusen'
+
+Now run `bundle install` and restart your server.
 
 
 Development

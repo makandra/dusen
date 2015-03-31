@@ -132,6 +132,14 @@ shared_examples_for 'model with search syntax' do
         subject.search('Sunny -Power').to_a.should == [match]
       end
 
+      it 'should work if search_by contains a join' do
+        category1 = Recipe::Category.create!(:name => 'Rice')
+        category2= Recipe::Category.create!(:name => 'Barbecue')
+        match = Recipe.create!(:name => 'Martini Chicken', :category => category1)
+        no_match = Recipe.create!(:name => 'Barbecue Chicken', :category => category2)
+        Recipe.search('category:-Barbecue').to_a.should == [match]
+      end
+
     end
 
     context 'when the given query is blank' do

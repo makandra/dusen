@@ -21,20 +21,8 @@ module Dusen
       query = query.condensed
       matches = find_parsed_query(root_scope, query.include)
       if query.exclude.any?
-        exclude_matches = find_parsed_query(root_scope, query.exclude)
-
-        # extract conditions that were added by exclude tokens
-        sql = exclude_matches.to_sql
-        root_pattern = /\A#{Regexp.quote root_scope.to_sql}/
-        sql =~ root_pattern or raise "Could not find ..."
-        sql = sql.sub(root_pattern, '')
-
-        # negate conditions
-        sql = sql.sub(/^\s*WHERE\s*/i, '')
-        sql = sql.sub(/^\s*AND\s*/i, '')
-        sql = "NOT COALESCE(#{sql}, 0)"
-
-        matches.scoped(:conditions => sql)
+        inverted_exclude_scope = build_exclude_scope(root_scope, query.exclude)
+        matches.merge(inverted_exclude_scope)
       else
         matches
       end
@@ -71,6 +59,24 @@ module Dusen
         scope = scoper.call(scope, token.value)
       end
       scope
+    end
+
+    def build_exclude_scope(root_scope, exclude_query)
+      root_scope_without_conditions = root_scope.except(:where)
+      exclude_scope = find_parsed_query(root_scope_without_conditions, exclude_query)
+      exclude_scope_conditions = exclude_scope.where_values.reduce(:and)
+      if exclude_scope_conditions.present?
+        # where_values.reduce(:and) returns a string if only one where_value given
+        # and a Arel::Node for more than one where_value
+        unless exclude_scope_conditions.is_a?(String)
+          exclude_scope_conditions = exclude_scope_conditions.to_sql
+        end
+        inverted_sql = "NOT COALESCE (" + exclude_scope_conditions + ",0)"
+        exclude_scope.except(:where).where(inverted_sql)
+      else
+        # we cannot build an inverted scope if no where-conditions are present
+        root_scope
+      end
     end
 
   end

@@ -98,7 +98,7 @@ shared_examples_for 'model with search syntax' do
         match = subject.create!(:name => 'Abraham', :city => 'Foohausen')
         no_match = subject.create!(:name => 'Abraham', :city => 'Barhausen')
         no_match2 = subject.create!(:name => 'Absolutly no match')
-        subject.search('Abraham city:-Barhausen').to_a.should == [match]
+        subject.search('Abraham -city:Barhausen').to_a.should == [match]
       end
 
       it 'should work if the query only contains excluded words' do
@@ -116,7 +116,7 @@ shared_examples_for 'model with search syntax' do
       it 'should work if the query only contains excluded qualified fields' do
         match = subject.create!(:name => 'Abraham', :city => 'Foohausen')
         no_match = subject.create!(:name => 'Abraham', :city => 'Barhausen')
-        subject.search('city:-Barhausen').to_a.should == [match]
+        subject.search('-city:Barhausen').to_a.should == [match]
       end
 
       it 'respects an existing scope chain when there are only excluded tokens (bugfix)' do
@@ -137,7 +137,7 @@ shared_examples_for 'model with search syntax' do
         category2= Recipe::Category.create!(:name => 'Barbecue')
         match = Recipe.create!(:name => 'Martini Chicken', :category => category1)
         no_match = Recipe.create!(:name => 'Barbecue Chicken', :category => category2)
-        Recipe.search('category:-Barbecue').to_a.should == [match]
+        Recipe.search('-category:Barbecue').to_a.should == [match]
       end
 
     end

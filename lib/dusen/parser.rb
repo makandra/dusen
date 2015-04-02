@@ -5,7 +5,7 @@ module Dusen
 
     WESTERNISH_WORD_CHARACTER =  '\\w\\-\\.;@_ÄÖÜäöüß' # this is wrong on so many levels
     TEXT_QUERY = /(?:(\-)?"([^"]+)"|(\-)?([#{WESTERNISH_WORD_CHARACTER}]+))/
-    FIELD_QUERY = /(\w+)\:#{TEXT_QUERY}/
+    FIELD_QUERY = /(\-)?(\w+)\:#{TEXT_QUERY}/
 
     def self.parse(query_string)
       query_string = query_string.dup # we are going to delete substrings in-place
@@ -26,9 +26,9 @@ module Dusen
 
     def self.extract_field_query_tokens(query_string, query)
       while query_string.sub!(FIELD_QUERY, '')
-        field = $1
-        value = "#{$3}#{$5}"
-        exclude = "#{$2}#{$4}" == "-"
+        field = $2
+        value = "#{$4}#{$6}"
+        exclude = "#{$1}" == "-"
         options = { :field => field, :value => value, :exclude => exclude }
         query << Token.new(options)
       end

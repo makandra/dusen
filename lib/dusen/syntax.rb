@@ -64,18 +64,29 @@ module Dusen
     def build_exclude_scope(root_scope, exclude_query)
       root_scope_without_conditions = root_scope.except(:where)
       exclude_scope = find_parsed_query(root_scope_without_conditions, exclude_query)
-      exclude_scope_conditions = exclude_scope.where_values.reduce(:and)
+      exclude_scope_conditions = concatenate_where_values(exclude_scope.where_values)
       if exclude_scope_conditions.present?
-        # where_values.reduce(:and) returns a string if only one where_value given
-        # and a Arel::Node for more than one where_value
-        unless exclude_scope_conditions.is_a?(String)
-          exclude_scope_conditions = exclude_scope_conditions.to_sql
-        end
         inverted_sql = "NOT COALESCE (" + exclude_scope_conditions + ",0)"
         exclude_scope.except(:where).where(inverted_sql)
       else
-        # we cannot build an inverted scope if no where-conditions are present
+        # we cannot build an inverted scope without where-conditions
         root_scope
+      end
+    end
+
+    def concatenate_where_values(where_values)
+      if where_values.any?
+        if where_values[0].is_a?(String)
+          first = where_values.shift
+          where = where_values.reduce(first) do |result, value|
+            result << " AND " << value
+          end
+          where
+        else
+          # where_values are AREL-Nodes
+          where = where_values.reduce(:and)
+          where.to_sql
+        end
       end
     end
 

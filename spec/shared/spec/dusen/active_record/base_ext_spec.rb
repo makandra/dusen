@@ -132,12 +132,18 @@ shared_examples_for 'model with search syntax' do
         subject.search('Sunny -Power').to_a.should == [match]
       end
 
-      it 'should work if search_by contains a join' do
+      it 'should work if search_by contains a join (bugfix)' do
         category1 = Recipe::Category.create!(:name => 'Rice')
-        category2= Recipe::Category.create!(:name => 'Barbecue')
+        category2 = Recipe::Category.create!(:name => 'Barbecue')
         match = Recipe.create!(:name => 'Martini Chicken', :category => category1)
         no_match = Recipe.create!(:name => 'Barbecue Chicken', :category => category2)
-        Recipe.search('-category:Barbecue').to_a.should == [match]
+        Recipe.search('Chicken -category:Barbecue').to_a.should == [match]
+      end
+
+      it 'should work when search_by uses SQL-Regexes which need to be "and"ed together by syntax#build_exclude_scope (bugfix)' do
+        match = subject.create!(:name => 'Sunny Flower', :city => "Flower")
+        no_match = subject.create!(:name => 'Sunny Power', :city => "Power")
+        subject.search('-name_and_city_regex:Power').to_a.should == [match]
       end
 
     end
@@ -166,7 +172,7 @@ shared_examples_for 'model with search syntax' do
     end
 
     it 'should be callable multiple times, appending additional syntax' do
-      subject.search_syntax.fields.keys.should =~ ['text', 'email', 'city', 'role']
+      subject.search_syntax.fields.keys.should =~ ['text', 'email', 'city', 'role', 'name_and_city_regex']
     end
 
   end

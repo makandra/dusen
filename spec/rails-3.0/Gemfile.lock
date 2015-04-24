@@ -1,7 +1,7 @@
 PATH
   remote: ../..
   specs:
-    dusen (0.5.1)
+    dusen (0.5.2)
       activerecord (>= 3.0)
       edge_rider (>= 0.2.5)
 

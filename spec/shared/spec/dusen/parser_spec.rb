@@ -14,6 +14,16 @@ describe Dusen::Parser do
       query.collect(&:value).should == ['Baden-Baden']
     end
 
+    it 'should parse umlauts and accents' do
+      query = Dusen::Parser.parse('field:åöÙÔøüéíÁ ÄüÊçñÆððÿáÒÉ pulvérisateur pędzić')
+      query.collect(&:value).should == ['åöÙÔøüéíÁ', 'ÄüÊçñÆððÿáÒÉ', 'pulvérisateur', 'pędzić']
+    end
+
+    it 'should parse currency symbols' do
+      query = Dusen::Parser.parse('field:10€¢£¤¥₣$ 20₤₭ $¢£¤¥฿₠₡₢₣₤₥₦₧₨₩₪₫€₭₮₯₰₱₲₳₴₵₶₷₸₹₺')
+      query.collect(&:value).should == ['10€¢£¤¥₣$', '20₤₭', '$¢£¤¥฿₠₡₢₣₤₥₦₧₨₩₪₫€₭₮₯₰₱₲₳₴₵₶₷₸₹₺']
+    end
+
   end
 
 end

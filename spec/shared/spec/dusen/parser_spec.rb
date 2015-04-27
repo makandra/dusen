@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 describe Dusen::Parser do
@@ -15,13 +17,8 @@ describe Dusen::Parser do
     end
 
     it 'should parse umlauts and accents' do
-      query = Dusen::Parser.parse('field:åöÙÔøüéíÁ ÄüÊçñÆððÿáÒÉ pulvérisateur pędzić')
-      query.collect(&:value).should == ['åöÙÔøüéíÁ', 'ÄüÊçñÆððÿáÒÉ', 'pulvérisateur', 'pędzić']
-    end
-
-    it 'should parse currency symbols' do
-      query = Dusen::Parser.parse('field:10€¢£¤¥₣$ 20₤₭ $¢£¤¥฿₠₡₢₣₤₥₦₧₨₩₪₫€₭₮₯₰₱₲₳₴₵₶₷₸₹₺')
-      query.collect(&:value).should == ['10€¢£¤¥₣$', '20₤₭', '$¢£¤¥฿₠₡₢₣₤₥₦₧₨₩₪₫€₭₮₯₰₱₲₳₴₵₶₷₸₹₺']
+      query = Dusen::Parser.parse('field:åöÙÔøüéíÁ "ÄüÊçñÆ ððÿáÒÉ" pulvérisateur pędzić')
+      query.collect(&:value).should == ['åöÙÔøüéíÁ', 'ÄüÊçñÆ ððÿáÒÉ', 'pulvérisateur', 'pędzić']
     end
 
   end

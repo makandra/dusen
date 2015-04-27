@@ -70,6 +70,7 @@ module Dusen
         exclude_scope.except(:where).where(inverted_sql)
       else
         # we cannot build an inverted scope without where-conditions
+
         root_scope
       end
     end

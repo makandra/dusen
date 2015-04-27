@@ -3,9 +3,7 @@
 module Dusen
   class Parser
 
-    CURRENCY_CHARACTERS = '$¢£¤¥฿₠₡₢₣₤₥₦₧₨₩₪₫€₭₮₯₰₱₲₳₴₵₶₷₸₹₺'
-    WESTERNISH_WORD_CHARACTER =  /[:alnum:]\-\.;@_\d#{CURRENCY_CHARACTERS}/
-    TEXT_QUERY = /(?:(\-)?"([^"]+)"|(\-)?([#{WESTERNISH_WORD_CHARACTER}]+))/
+    TEXT_QUERY = /(?:(\-)?"([^"]+)"|(\-)?([\S]+))/
     FIELD_QUERY = /(\-)?(\w+)\:#{TEXT_QUERY}/
 
     def self.parse(query_string)

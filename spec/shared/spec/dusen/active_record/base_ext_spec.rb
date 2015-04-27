@@ -66,7 +66,7 @@ shared_examples_for 'model with search syntax' do
       subject.search('E.ONNNEN').to_a.should == [match]
     end
 
-    it 'should find words where one letter is separated from other letters by a period' do
+    it 'should find words where one letter is separated from other letters by a semicolon' do
       match = subject.create!(:name => 'E;ONNNEN')
       subject.search('E;ONNNEN')
       subject.search('E;ONNNEN').to_a.should == [match]
@@ -76,6 +76,11 @@ shared_examples_for 'model with search syntax' do
       match = subject.create!(:city => 'Baden-Baden')
       no_match = subject.create!(:city => 'Baden')
       subject.search('Baden-Baden').to_a.should == [match]
+    end
+
+    it 'should handle umlauts and special characters' do
+      match = subject.create!(:city => 'púlvérìsätëûr')
+      subject.search('púlvérìsätëûr').to_a.should == [match]
     end
 
     context 'with excludes' do

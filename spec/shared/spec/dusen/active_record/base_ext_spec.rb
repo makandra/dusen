@@ -181,6 +181,24 @@ shared_examples_for 'model with search syntax' do
     end
 
   end
+  
+  describe '.where_like' do
+
+    it 'finds a word in any of the given columns' do
+      match1 = subject.create!(:name => 'word', :city => 'XXXX')
+      match2 = subject.create!(:name => 'XXXX', :city => 'word')
+      no_match = subject.create!(:name => 'XXXX', :city => 'XXXX')
+      subject.where_like([:name, :city] => 'word').to_a.should =~ [match1, match2]
+    end
+    
+    it 'requires all the given words' do
+      match1 = subject.create!(:city => 'word1 word2')
+      match2 = subject.create!(:city => 'word2 word1')
+      no_match = subject.create!(:city => 'word1')
+      subject.where_like(:city => ['word1', 'word2']).to_a.should =~ [match1, match2]
+    end
+    
+  end
 
 end
 

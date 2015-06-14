@@ -89,7 +89,7 @@ module Dusen
         end
 
         def where_like(conditions, options = {})
-          scope = self
+          scope = scoped
           if options[:negate]
             match_operator = 'NOT LIKE'
             join_operator = 'AND'

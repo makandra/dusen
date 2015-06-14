@@ -81,6 +81,9 @@ that looks roughly like the following:
       contacts.email LIKE "%market ave%"  OR 
       contacts.email LIKE "%market ave%" )
 
+You can also use `where_like` to find all the records *not* matching some phrases, using the `:negate` option:
+
+    Contact.where_like({ :name => 'foo' }, { :negate => true })
 
 Processing queries for qualified fields
 ---------------------------------------

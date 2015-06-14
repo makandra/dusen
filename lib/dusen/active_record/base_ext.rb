@@ -88,14 +88,24 @@ module Dusen
 
         end
 
-        def where_like(conditions)
+        def where_like(conditions, options = {})
           scope = self
+          if options[:negate]
+            match_operator = 'NOT LIKE'
+            join_operator = 'AND'
+          else
+            match_operator = 'LIKE'
+            join_operator = 'OR'
+          end
+
           conditions.each do |field_or_fields, query|
             fields = Array(field_or_fields).collect do |field|
               Util.qualify_column_name(scope, field)
             end
             Array.wrap(query).each do |phrase|
-              phrase_with_placeholders = fields.collect { |field| "#{field} LIKE ?" }.join(' OR ')
+              phrase_with_placeholders = fields.collect { |field|
+                "#{field} #{match_operator} ?"
+              }.join(" #{join_operator} ")
               like_expression = Dusen::Util.like_expression(phrase)
               bindings = [like_expression] * fields.size
               conditions = [ phrase_with_placeholders, *bindings ]

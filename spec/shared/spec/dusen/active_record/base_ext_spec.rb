@@ -214,6 +214,12 @@ shared_examples_for 'model with search syntax' do
         subject.where_like({ :city => ['word1', 'word2'] }, :negate => true).to_a.should =~ [match]
       end
 
+      it "doesn't match NULL values" do
+        no_match = subject.create!(:city => nil)
+        match = subject.create!(:city => 'word3')
+        subject.where_like({ :city => ['word1'] }, :negate => true).to_a.should =~ [match]
+      end
+
     end
     
   end

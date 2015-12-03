@@ -66,8 +66,13 @@ module Dusen
       exclude_scope = find_parsed_query(root_scope_without_conditions, exclude_query)
       exclude_scope_conditions = concatenate_where_values(exclude_scope.where_values)
       if exclude_scope_conditions.present?
+        excluded_values = exclude_query.tokens.map(&:value).flatten
         inverted_sql = "NOT COALESCE (" + exclude_scope_conditions + ",0)"
-        exclude_scope.except(:where).where(inverted_sql)
+        if inverted_sql.include?('?')
+          exclude_scope.except(:where).where(inverted_sql, *excluded_values)
+        else
+          exclude_scope.except(:where).where(inverted_sql)
+        end
       else
         # we cannot build an inverted scope without where-conditions
 

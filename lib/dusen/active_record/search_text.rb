@@ -30,7 +30,7 @@ module Dusen
         invalid_index_records = for_model(model).invalid
         source_ids = invalid_index_records.collect_column(:source_id)
         pending_source_ids = Set.new(source_ids)
-        model.find_in_batches(:conditions => { :id => source_ids } ) do |batch|
+        model.where(:id => source_ids).find_in_batches do |batch|
           batch.each do |source_record|
             source_record.index_search_text
             pending_source_ids.delete(source_record.id)

@@ -1,6 +1,6 @@
-%1 This gem is no longer maintained
+# This gem is no longer maintained!
 
-If you were using Dusen for its query parsing and LIKE queries, we recommend to migrate to [Minidusen](https://github.com/makandra/minidusen).
+If you were using Dusen for its query parsing and LIKE queries, we recommend to migrate to [Minidusen](https://github.com/makandra/minidusen), which extracts those parts from Dusen. Minidusen is compatible with MySQL, PostgreSQL and modern versions of Rails.
 
 If you are looking for a full text indexing solution, we recommend to use PostgreSQL with [pg_search](https://github.com/Casecommons/pg_search).
 
